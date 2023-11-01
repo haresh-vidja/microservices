@@ -1,0 +1,19 @@
+{
+  "name": "backend-microservices",
+  "version": "1.0.0",
+  "description": "Backend microservices using Express.js and MongoDB",
+  "main": "index.js",
+  "scripts": {
+    "install-all": "npm install && cd customer && npm install && cd ../sellers && npm install && cd ../media && npm install && cd ../products && npm install",
+    "customer": "cd customer && npm start",
+    "customer:dev": "cd customer && npm run dev",
+    "sellers": "cd sellers && npm start",
+    "sellers:dev": "cd sellers && npm run dev",
+    "media": "cd media && npm start",
+    "media:dev": "cd media && npm run dev",
+    "products": "cd products && npm start",
+    "products:dev": "cd products && npm run dev"
+  },
+  "author": "Haresh Vidja",
+  "license": "ISC"
+}
