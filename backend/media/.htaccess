@@ -1,0 +1,48 @@
+# Apache Configuration for Media Service
+# Enable URL rewriting
+RewriteEngine On
+
+# Redirect all requests to index.php except for actual files and directories
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ index.php [QSA,L]
+
+# Security headers
+Header always set X-Content-Type-Options nosniff
+Header always set X-Frame-Options DENY
+Header always set X-XSS-Protection "1; mode=block"
+
+# File upload limits
+php_value upload_max_filesize 5M
+php_value post_max_size 6M
+php_value max_execution_time 30
+php_value memory_limit 64M
+
+# Prevent access to sensitive files
+<Files ~ "^\.">
+    Order allow,deny
+    Deny from all
+</Files>
+
+<Files ~ "\.php$">
+    Order allow,deny
+    Allow from all
+</Files>
+
+# Cache static files
+<FilesMatch "\.(jpg|jpeg|png|gif|webp|css|js|ico|svg)$">
+    ExpiresActive On
+    ExpiresDefault "access plus 1 year"
+    Header set Cache-Control "public, immutable"
+</FilesMatch>
+
+# Protect upload directories from executing PHP
+<Directory "uploads">
+    Options -ExecCGI
+    AddHandler cgi-script .php .pl .py .jsp .asp .sh .cgi
+    php_flag engine off
+</Directory>
+
+# Error pages
+ErrorDocument 404 /index.php
+ErrorDocument 500 /index.php
