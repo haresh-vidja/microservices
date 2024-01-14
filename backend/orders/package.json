@@ -1,0 +1,36 @@
+{
+  "name": "orders-service",
+  "version": "1.0.0",
+  "description": "Orders microservice with cart management and inventory control",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  },
+  "dependencies": {
+    "express": "^4.17.1",
+    "mongoose": "^5.13.14",
+    "cors": "^2.8.5",
+    "helmet": "^4.6.0",
+    "compression": "^1.7.4",
+    "express-validator": "^6.14.0",
+    "joi": "^17.6.0",
+    "dotenv": "^10.0.0",
+    "winston": "^3.7.2",
+    "winston-daily-rotate-file": "^4.6.1",
+    "redis": "^3.1.2",
+    "swagger-jsdoc": "^6.1.0",
+    "swagger-ui-express": "^4.3.0",
+    "uuid": "^8.3.2",
+    "express-rate-limit": "^5.5.1",
+    "http-graceful-shutdown": "^3.1.7",
+    "axios": "^0.27.2",
+    "kafkajs": "^1.16.0",
+    "jsonwebtoken": "^8.5.1"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.15"
+  },
+  "author": "Haresh Vidja",
+  "license": "ISC"
+}
