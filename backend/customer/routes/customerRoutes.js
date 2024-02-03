@@ -6,7 +6,7 @@
 const express = require('express');
 const router = express.Router();
 const customerService = require('../services/customerService');
-const { verifyToken } = require('../middleware/auth');
+const { verifyToken, verifyServiceKey } = require('../middleware/auth');
 const { validate, validateQuery, schemas } = require('../validation/customerValidation');
 const { asyncHandler } = require('../middleware/errorHandler');
 const { sendSuccess, sendError } = require('../utils/response');
@@ -302,6 +302,84 @@ router.get('/',
   asyncHandler(async (req, res) => {
     const result = await customerService.getAllCustomers(req.query);
     sendSuccess(res, result, 'Customers retrieved successfully');
+  })
+);
+
+// Inter-service communication endpoints
+
+/**
+ * @swagger
+ * /customers/service/bulk:
+ *   post:
+ *     summary: Get multiple customers by IDs (Service only)
+ *     tags: [Inter-Service]
+ *     security:
+ *       - serviceKey: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               customerIds:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *     responses:
+ *       200:
+ *         description: Customers retrieved successfully
+ */
+router.post('/service/bulk',
+  verifyServiceKey,
+  asyncHandler(async (req, res) => {
+    const { customerIds } = req.body;
+    
+    if (!customerIds || !Array.isArray(customerIds)) {
+      return sendError(res, 'customerIds array is required', 400);
+    }
+    
+    const customers = await customerService.getCustomersByIds(customerIds);
+    sendSuccess(res, 'Customers retrieved successfully', customers);
+  })
+);
+
+/**
+ * @swagger
+ * /customers/service/verify:
+ *   post:
+ *     summary: Verify customer exists and is active (Service only)
+ *     tags: [Inter-Service]
+ *     security:
+ *       - serviceKey: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               customerId:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Customer verification result
+ */
+router.post('/service/verify',
+  verifyServiceKey,
+  asyncHandler(async (req, res) => {
+    const { customerId } = req.body;
+    
+    if (!customerId) {
+      return sendError(res, 'customerId is required', 400);
+    }
+    
+    const isValid = await customerService.verifyCustomer(customerId);
+    sendSuccess(res, 'Customer verified', { 
+      customerId, 
+      isValid, 
+      timestamp: new Date().toISOString() 
+    });
   })
 );
 

@@ -336,6 +336,49 @@ class CustomerService {
       throw error;
     }
   }
+
+  /**
+   * Get multiple customers by IDs (for inter-service communication)
+   * @param {Array<string>} customerIds - Array of customer IDs
+   * @returns {Promise<Array>} Customer data
+   */
+  async getCustomersByIds(customerIds) {
+    try {
+      const customers = await Customer.find({
+        _id: { $in: customerIds },
+        isActive: true
+      }).select('_id firstName lastName email phone avatar createdAt');
+
+      return customers.map(customer => ({
+        id: customer._id,
+        firstName: customer.firstName,
+        lastName: customer.lastName,
+        fullName: `${customer.firstName} ${customer.lastName}`,
+        email: customer.email,
+        phone: customer.phone,
+        avatar: customer.avatar,
+        createdAt: customer.createdAt
+      }));
+    } catch (error) {
+      logger.error('Error fetching customers by IDs:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Verify if customer exists and is active
+   * @param {string} customerId - Customer ID
+   * @returns {Promise<boolean>} Verification result
+   */
+  async verifyCustomer(customerId) {
+    try {
+      const customer = await Customer.findById(customerId).select('isActive');
+      return !!(customer && customer.isActive);
+    } catch (error) {
+      logger.error('Error verifying customer:', error);
+      return false;
+    }
+  }
 }
 
 module.exports = new CustomerService();
