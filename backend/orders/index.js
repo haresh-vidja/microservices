@@ -6,10 +6,16 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const compression = require('compression');
+const swaggerJsdoc = require('swagger-jsdoc');
+const swaggerUi = require('swagger-ui-express');
+
 const { connectDB } = require('./config/database');
-const orderService = require('./services/orderService');
 const kafkaClient = require('./utils/kafkaClient');
 const config = require('./config');
+const { errorHandler, notFound } = require('./middleware/errorHandler');
+
+// Routes
+const orderRoutes = require('./routes/orderRoutes');
 
 const app = express();
 const PORT = config.server.port;
@@ -18,7 +24,48 @@ const PORT = config.server.port;
 app.use(helmet());
 app.use(cors({ origin: '*', credentials: true }));
 app.use(compression());
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true }));
+
+// Swagger configuration
+const swaggerOptions = {
+  definition: {
+    openapi: '3.0.0',
+    info: {
+      title: 'Orders Service API',
+      version: '1.0.0',
+      description: 'Order management and cart functionality API'
+    },
+    servers: [
+      {
+        url: `http://localhost:${PORT}`,
+        description: 'Development server'
+      }
+    ],
+    components: {
+      securitySchemes: {
+        bearerAuth: {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT'
+        },
+        serviceKey: {
+          type: 'apiKey',
+          in: 'header',
+          name: 'X-Service-Key'
+        }
+      }
+    }
+  },
+  apis: ['./routes/*.js', './controllers/*.js']
+};
+
+const specs = swaggerJsdoc(swaggerOptions);
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
+app.get('/api-docs.json', (req, res) => {
+  res.setHeader('Content-Type', 'application/json');
+  res.send(specs);
+});
 
 // Health check
 app.get('/health', (req, res) => {
@@ -26,55 +73,18 @@ app.get('/health', (req, res) => {
     success: true,
     service: 'orders-service',
     status: 'healthy',
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    version: '1.0.0'
   });
 });
 
-// Add to cart
-app.post('/api/v1/cart/add', async (req, res) => {
-  try {
-    const { customerId, productId, quantity } = req.body;
-    const cart = await orderService.addToCart(customerId, productId, quantity);
-    res.json({ success: true, data: cart });
-  } catch (error) {
-    res.status(400).json({ success: false, message: error.message });
-  }
-});
+// API Routes
+app.use('/api/v1', orderRoutes);
 
-// Place order
-app.post('/api/v1/orders', async (req, res) => {
-  try {
-    const { customerId, shippingAddressId, notes } = req.body;
-    const order = await orderService.placeOrder(customerId, shippingAddressId, notes);
-    res.status(201).json({ success: true, data: order });
-  } catch (error) {
-    res.status(400).json({ success: false, message: error.message });
-  }
-});
-
-// Get order
-app.get('/api/v1/orders/:orderId', async (req, res) => {
-  try {
-    const { orderId } = req.params;
-    const { customerId } = req.query;
-    const order = await orderService.getOrder(orderId, customerId);
-    res.json({ success: true, data: order });
-  } catch (error) {
-    res.status(404).json({ success: false, message: error.message });
-  }
-});
-
-// Cancel order
-app.put('/api/v1/orders/:orderId/cancel', async (req, res) => {
-  try {
-    const { orderId } = req.params;
-    const { customerId, reason } = req.body;
-    const order = await orderService.cancelOrder(orderId, customerId, reason);
-    res.json({ success: true, data: order });
-  } catch (error) {
-    res.status(400).json({ success: false, message: error.message });
-  }
-});
+// Error handlers
+app.use(notFound);
+app.use(errorHandler);
 
 // Start server
 const startServer = async () => {
@@ -84,6 +94,7 @@ const startServer = async () => {
     
     app.listen(PORT, () => {
       console.log(`Orders Service running on http://localhost:${PORT}`);
+      console.log(`API Documentation: http://localhost:${PORT}/api-docs`);
     });
   } catch (error) {
     console.error('Failed to start orders service:', error);
