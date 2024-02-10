@@ -259,6 +259,157 @@ class MediaController {
     }
 
     /**
+     * Validate multiple media files (for inter-service communication)
+     */
+    public function validateFiles() {
+        try {
+            // Verify service key
+            $service_key = $_SERVER['HTTP_X_SERVICE_KEY'] ?? null;
+            $valid_keys = [
+                'admin-secret-key-2024',
+                'order-secret-key-2024', 
+                'customer-secret-key-2024',
+                'seller-secret-key-2024',
+                'product-secret-key-2024',
+                'notification-secret-key-2024'
+            ];
+
+            if (!$service_key || !in_array($service_key, $valid_keys)) {
+                $this->sendResponse(403, false, 'Invalid or missing service key');
+                return;
+            }
+
+            $input = json_decode(file_get_contents('php://input'), true);
+            $file_ids = $input['fileIds'] ?? [];
+
+            if (empty($file_ids) || !is_array($file_ids)) {
+                $this->sendResponse(400, false, 'fileIds array is required');
+                return;
+            }
+
+            $results = [];
+            foreach ($file_ids as $file_id) {
+                if (!$this->isValidUUID($file_id)) {
+                    $results[] = [
+                        'id' => $file_id,
+                        'valid' => false,
+                        'exists' => false,
+                        'reason' => 'Invalid UUID format'
+                    ];
+                    continue;
+                }
+
+                $file = $this->mediaFile->getById($file_id);
+                if (!$file) {
+                    $results[] = [
+                        'id' => $file_id,
+                        'valid' => false,
+                        'exists' => false,
+                        'reason' => 'File not found'
+                    ];
+                    continue;
+                }
+
+                // Check if file physically exists
+                $file_path = $this->upload_dir . $file['filename'];
+                $file_exists = file_exists($file_path);
+
+                $results[] = [
+                    'id' => $file_id,
+                    'valid' => $file_exists,
+                    'exists' => true,
+                    'filename' => $file['filename'],
+                    'original_name' => $file['original_name'],
+                    'file_size' => $file['file_size'],
+                    'file_type' => $file['file_type'],
+                    'url' => $file['url'],
+                    'thumbnail_url' => $file['thumbnail_url'],
+                    'is_used' => $file['is_used'],
+                    'uploaded_at' => $file['uploaded_at']
+                ];
+            }
+
+            $summary = [
+                'total' => count($file_ids),
+                'valid' => count(array_filter($results, fn($r) => $r['valid'])),
+                'invalid' => count(array_filter($results, fn($r) => !$r['valid']))
+            ];
+
+            $this->sendResponse(200, true, 'File validation completed', [
+                'files' => $results,
+                'summary' => $summary
+            ]);
+
+        } catch (Exception $e) {
+            $this->sendResponse(500, false, $e->getMessage());
+        }
+    }
+
+    /**
+     * Bulk mark files as used (for inter-service communication)
+     */
+    public function bulkMarkAsUsed() {
+        try {
+            // Verify service key
+            $service_key = $_SERVER['HTTP_X_SERVICE_KEY'] ?? null;
+            $valid_keys = [
+                'admin-secret-key-2024',
+                'order-secret-key-2024', 
+                'customer-secret-key-2024',
+                'seller-secret-key-2024',
+                'product-secret-key-2024',
+                'notification-secret-key-2024'
+            ];
+
+            if (!$service_key || !in_array($service_key, $valid_keys)) {
+                $this->sendResponse(403, false, 'Invalid or missing service key');
+                return;
+            }
+
+            $input = json_decode(file_get_contents('php://input'), true);
+            $file_ids = $input['fileIds'] ?? [];
+
+            if (empty($file_ids) || !is_array($file_ids)) {
+                $this->sendResponse(400, false, 'fileIds array is required');
+                return;
+            }
+
+            $results = [];
+            foreach ($file_ids as $file_id) {
+                if (!$this->isValidUUID($file_id)) {
+                    $results[] = [
+                        'id' => $file_id,
+                        'success' => false,
+                        'message' => 'Invalid UUID format'
+                    ];
+                    continue;
+                }
+
+                $success = $this->mediaFile->markAsUsed($file_id);
+                $results[] = [
+                    'id' => $file_id,
+                    'success' => $success,
+                    'message' => $success ? 'Marked as used' : 'Failed to mark as used'
+                ];
+            }
+
+            $summary = [
+                'total' => count($file_ids),
+                'successful' => count(array_filter($results, fn($r) => $r['success'])),
+                'failed' => count(array_filter($results, fn($r) => !$r['success']))
+            ];
+
+            $this->sendResponse(200, true, 'Bulk mark as used completed', [
+                'results' => $results,
+                'summary' => $summary
+            ]);
+
+        } catch (Exception $e) {
+            $this->sendResponse(500, false, $e->getMessage());
+        }
+    }
+
+    /**
      * Health check
      */
     public function healthCheck() {

@@ -351,6 +351,53 @@ class SellerService {
       { expiresIn: config.jwt.refreshExpiresIn }
     );
   }
+
+  /**
+   * Get multiple sellers by IDs (for inter-service communication)
+   * @param {Array<string>} sellerIds - Array of seller IDs
+   * @returns {Promise<Array>} Seller data
+   */
+  async getSellersByIds(sellerIds) {
+    try {
+      const sellers = await Seller.find({
+        _id: { $in: sellerIds },
+        isActive: true
+      })
+      .select('_id firstName lastName email phone businessName logo createdAt')
+      .populate('business', 'businessName businessType address');
+
+      return sellers.map(seller => ({
+        id: seller._id,
+        firstName: seller.firstName,
+        lastName: seller.lastName,
+        fullName: `${seller.firstName} ${seller.lastName}`,
+        email: seller.email,
+        phone: seller.phone,
+        businessName: seller.businessName,
+        logo: seller.logo,
+        business: seller.business,
+        createdAt: seller.createdAt
+      }));
+    } catch (error) {
+      logger.error('Error fetching sellers by IDs:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Verify if seller exists and is active
+   * @param {string} sellerId - Seller ID
+   * @returns {Promise<boolean>} Verification result
+   */
+  async verifySeller(sellerId) {
+    try {
+      const seller = await Seller.findById(sellerId).select('isActive');
+      return !!(seller && seller.isActive);
+    } catch (error) {
+      logger.error('Error verifying seller:', error);
+      return false;
+    }
+  }
 }
 
 module.exports = new SellerService();

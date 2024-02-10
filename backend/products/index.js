@@ -235,6 +235,242 @@ app.delete('/api/v1/products/:id', async (req, res) => {
   }
 });
 
+// Inter-service communication middleware
+const verifyServiceKey = (req, res, next) => {
+  const serviceKey = req.headers['x-service-key'];
+  
+  const validKeys = [
+    process.env.ADMIN_SERVICE_KEY || 'admin-secret-key-2024',
+    process.env.ORDER_SERVICE_KEY || 'order-secret-key-2024',
+    process.env.CUSTOMER_SERVICE_KEY || 'customer-secret-key-2024',
+    process.env.SELLER_SERVICE_KEY || 'seller-secret-key-2024',
+    process.env.MEDIA_SERVICE_KEY || 'media-secret-key-2024',
+    process.env.NOTIFICATION_SERVICE_KEY || 'notification-secret-key-2024'
+  ];
+  
+  if (!serviceKey || !validKeys.includes(serviceKey)) {
+    return res.status(403).json({
+      success: false,
+      message: 'Invalid or missing service key'
+    });
+  }
+  
+  next();
+};
+
+// Bulk products retrieval (for order service)
+app.post('/api/v1/service/products/bulk', verifyServiceKey, async (req, res) => {
+  try {
+    const { productIds } = req.body;
+    
+    if (!productIds || !Array.isArray(productIds)) {
+      return res.status(400).json({
+        success: false,
+        message: 'productIds array is required'
+      });
+    }
+    
+    const products = await Product.find({
+      _id: { $in: productIds },
+      isActive: true
+    }).select('_id name price stock sellerId images category');
+    
+    const formattedProducts = products.map(product => ({
+      id: product._id,
+      name: product.name,
+      price: product.price,
+      stock: product.stock,
+      sellerId: product.sellerId,
+      primaryImage: product.images.find(img => img.isPrimary)?.url || product.images[0]?.url,
+      category: product.category
+    }));
+    
+    res.json({
+      success: true,
+      data: formattedProducts
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+});
+
+// Check inventory availability
+app.post('/api/v1/service/products/inventory-check', verifyServiceKey, async (req, res) => {
+  try {
+    const { items } = req.body; // [{ productId, quantity }]
+    
+    if (!items || !Array.isArray(items)) {
+      return res.status(400).json({
+        success: false,
+        message: 'items array is required'
+      });
+    }
+    
+    const productIds = items.map(item => item.productId);
+    const products = await Product.find({
+      _id: { $in: productIds },
+      isActive: true
+    }).select('_id name stock');
+    
+    const availability = items.map(item => {
+      const product = products.find(p => p._id.toString() === item.productId);
+      
+      if (!product) {
+        return {
+          productId: item.productId,
+          available: false,
+          reason: 'Product not found',
+          requestedQuantity: item.quantity,
+          availableStock: 0
+        };
+      }
+      
+      const available = product.stock >= item.quantity;
+      
+      return {
+        productId: item.productId,
+        productName: product.name,
+        available,
+        reason: available ? 'Available' : 'Insufficient stock',
+        requestedQuantity: item.quantity,
+        availableStock: product.stock
+      };
+    });
+    
+    const allAvailable = availability.every(item => item.available);
+    
+    res.json({
+      success: true,
+      data: {
+        allAvailable,
+        items: availability,
+        summary: {
+          total: items.length,
+          available: availability.filter(item => item.available).length,
+          unavailable: availability.filter(item => !item.available).length
+        }
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+});
+
+// Update stock (for inventory management)
+app.put('/api/v1/service/products/stock', verifyServiceKey, async (req, res) => {
+  try {
+    const { updates } = req.body; // [{ productId, stockChange }]
+    
+    if (!updates || !Array.isArray(updates)) {
+      return res.status(400).json({
+        success: false,
+        message: 'updates array is required'
+      });
+    }
+    
+    const results = [];
+    
+    for (const update of updates) {
+      try {
+        const product = await Product.findById(update.productId);
+        
+        if (!product) {
+          results.push({
+            productId: update.productId,
+            success: false,
+            message: 'Product not found'
+          });
+          continue;
+        }
+        
+        const newStock = product.stock + update.stockChange;
+        
+        if (newStock < 0) {
+          results.push({
+            productId: update.productId,
+            success: false,
+            message: 'Insufficient stock for reduction'
+          });
+          continue;
+        }
+        
+        product.stock = newStock;
+        await product.save();
+        
+        results.push({
+          productId: update.productId,
+          success: true,
+          previousStock: product.stock - update.stockChange,
+          newStock: newStock,
+          stockChange: update.stockChange
+        });
+      } catch (error) {
+        results.push({
+          productId: update.productId,
+          success: false,
+          message: error.message
+        });
+      }
+    }
+    
+    res.json({
+      success: true,
+      data: results
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+});
+
+// Validate seller for product
+app.post('/api/v1/service/products/validate-seller', verifyServiceKey, async (req, res) => {
+  try {
+    const { productId, sellerId } = req.body;
+    
+    if (!productId || !sellerId) {
+      return res.status(400).json({
+        success: false,
+        message: 'productId and sellerId are required'
+      });
+    }
+    
+    const product = await Product.findById(productId).select('sellerId');
+    
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: 'Product not found'
+      });
+    }
+    
+    const isValid = product.sellerId === sellerId;
+    
+    res.json({
+      success: true,
+      data: {
+        productId,
+        sellerId,
+        isValid,
+        actualSellerId: product.sellerId
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+});
+
 // Error handler
 app.use((error, req, res, next) => {
   console.error('Error:', error);

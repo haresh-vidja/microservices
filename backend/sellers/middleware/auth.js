@@ -279,10 +279,63 @@ const optionalAuth = async (req, res, next) => {
   }
 };
 
+// Service keys for inter-service communication
+const SERVICE_KEYS = {
+  ADMIN_KEY: process.env.ADMIN_SERVICE_KEY || 'admin-secret-key-2024',
+  ORDER_KEY: process.env.ORDER_SERVICE_KEY || 'order-secret-key-2024',
+  CUSTOMER_KEY: process.env.CUSTOMER_SERVICE_KEY || 'customer-secret-key-2024',
+  PRODUCT_KEY: process.env.PRODUCT_SERVICE_KEY || 'product-secret-key-2024',
+  MEDIA_KEY: process.env.MEDIA_SERVICE_KEY || 'media-secret-key-2024',
+  NOTIFICATION_KEY: process.env.NOTIFICATION_SERVICE_KEY || 'notification-secret-key-2024'
+};
+
+/**
+ * Verify service key for inter-service communication
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @param {Function} next - Express next function
+ */
+const verifyServiceKey = (req, res, next) => {
+  try {
+    const serviceKey = req.headers['x-service-key'];
+    
+    if (!serviceKey) {
+      return res.status(401).json({
+        success: false,
+        message: 'Service key required'
+      });
+    }
+
+    // Check if service key is valid
+    const validKeys = Object.values(SERVICE_KEYS);
+    if (!validKeys.includes(serviceKey)) {
+      return res.status(403).json({
+        success: false,
+        message: 'Invalid service key'
+      });
+    }
+
+    // Add service info to request
+    req.service = {
+      authenticated: true,
+      key: serviceKey
+    };
+    
+    next();
+  } catch (error) {
+    logger.error('Service authentication error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Service authentication error'
+    });
+  }
+};
+
 module.exports = {
   verifyToken,
   checkRoleAccess,
   checkAnyPermission,
   checkRoleLevel,
-  optionalAuth
+  optionalAuth,
+  verifyServiceKey
 };

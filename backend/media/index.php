@@ -92,6 +92,24 @@ try {
                             }
                             break;
                             
+                        case 'validate':
+                            if ($method === 'POST') {
+                                $controller->validateFiles();
+                            } else {
+                                http_response_code(405);
+                                echo json_encode(['success' => false, 'message' => 'Method not allowed']);
+                            }
+                            break;
+                            
+                        case 'bulk-mark-used':
+                            if ($method === 'POST') {
+                                $controller->bulkMarkAsUsed();
+                            } else {
+                                http_response_code(405);
+                                echo json_encode(['success' => false, 'message' => 'Method not allowed']);
+                            }
+                            break;
+
                         default:
                             // Check if it's a UUID (file ID)
                             if (preg_match('/^[a-f\d]{8}(-[a-f\d]{4}){4}[a-f\d]{8}$/i', $action)) {

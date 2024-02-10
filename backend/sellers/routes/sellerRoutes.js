@@ -6,9 +6,9 @@
 const express = require('express');
 const router = express.Router();
 const sellerService = require('../services/sellerService');
-const { verifyToken, checkRoleAccess } = require('../middleware/auth');
+const { verifyToken, checkRoleAccess, verifyServiceKey } = require('../middleware/auth');
 const { asyncHandler } = require('../middleware/errorHandler');
-const { sendSuccess } = require('../utils/response');
+const { sendSuccess, sendError } = require('../utils/response');
 const Joi = require('joi');
 
 /**
@@ -312,6 +312,84 @@ router.put('/profile',
   asyncHandler(async (req, res) => {
     const result = await sellerService.updateProfile(req.seller.id, req.body);
     sendSuccess(res, result, 'Profile updated successfully');
+  })
+);
+
+// Inter-service communication endpoints
+
+/**
+ * @swagger
+ * /sellers/service/bulk:
+ *   post:
+ *     summary: Get multiple sellers by IDs (Service only)
+ *     tags: [Inter-Service]
+ *     security:
+ *       - serviceKey: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               sellerIds:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *     responses:
+ *       200:
+ *         description: Sellers retrieved successfully
+ */
+router.post('/service/bulk',
+  verifyServiceKey,
+  asyncHandler(async (req, res) => {
+    const { sellerIds } = req.body;
+    
+    if (!sellerIds || !Array.isArray(sellerIds)) {
+      return sendError(res, 'sellerIds array is required', 400);
+    }
+    
+    const sellers = await sellerService.getSellersByIds(sellerIds);
+    sendSuccess(res, 'Sellers retrieved successfully', sellers);
+  })
+);
+
+/**
+ * @swagger
+ * /sellers/service/verify:
+ *   post:
+ *     summary: Verify seller exists and is active (Service only)
+ *     tags: [Inter-Service]
+ *     security:
+ *       - serviceKey: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               sellerId:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Seller verification result
+ */
+router.post('/service/verify',
+  verifyServiceKey,
+  asyncHandler(async (req, res) => {
+    const { sellerId } = req.body;
+    
+    if (!sellerId) {
+      return sendError(res, 'sellerId is required', 400);
+    }
+    
+    const isValid = await sellerService.verifySeller(sellerId);
+    sendSuccess(res, 'Seller verified', { 
+      sellerId, 
+      isValid, 
+      timestamp: new Date().toISOString() 
+    });
   })
 );
 
