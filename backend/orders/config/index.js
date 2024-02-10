@@ -48,19 +48,23 @@ const config = {
   services: {
     customer: {
       baseUrl: process.env.CUSTOMER_SERVICE_URL || 'http://localhost:3001',
-      secretKey: process.env.CUSTOMER_SECRET_KEY || 'shared-secret-customer'
+      secretKey: process.env.ORDER_SERVICE_KEY || 'order-secret-key-2024'
     },
     sellers: {
       baseUrl: process.env.SELLERS_SERVICE_URL || 'http://localhost:3002',
-      secretKey: process.env.SELLERS_SECRET_KEY || 'shared-secret-sellers'
+      secretKey: process.env.ORDER_SERVICE_KEY || 'order-secret-key-2024'
     },
     products: {
       baseUrl: process.env.PRODUCTS_SERVICE_URL || 'http://localhost:3004',
-      secretKey: process.env.PRODUCTS_SECRET_KEY || 'shared-secret-products'
+      secretKey: process.env.ORDER_SERVICE_KEY || 'order-secret-key-2024'
     },
     media: {
       baseUrl: process.env.MEDIA_SERVICE_URL || 'http://localhost:3003',
-      secretKey: process.env.MEDIA_SECRET_KEY || 'shared-secret-media'
+      secretKey: process.env.ORDER_SERVICE_KEY || 'order-secret-key-2024'
+    },
+    notifications: {
+      baseUrl: process.env.NOTIFICATIONS_SERVICE_URL || 'http://localhost:3007',
+      secretKey: process.env.ORDER_SERVICE_KEY || 'order-secret-key-2024'
     }
   },
   

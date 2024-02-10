@@ -24,7 +24,8 @@ const services = {
   sellers: 'http://localhost:3002',
   media: 'http://localhost:3003',
   products: 'http://localhost:3004',
-  orders: 'http://localhost:3005'
+  orders: 'http://localhost:3005',
+  notifications: 'http://localhost:3007'
 };
 
 // Health check
@@ -76,6 +77,20 @@ app.get('/api/v1/dashboard/stats', async (req, res) => {
       };
     } catch (error) {
       stats.products = { total: 0, error: 'Service unavailable' };
+    }
+
+    try {
+      const ordersRes = await axios.get(`${services.orders}/api/v1/admin/orders`, {
+        timeout: 5000,
+        headers: {
+          'X-Service-Key': 'admin-secret-key-2024'
+        }
+      });
+      stats.orders = {
+        total: ordersRes.data.data?.pagination?.total || 0
+      };
+    } catch (error) {
+      stats.orders = { total: 0, error: 'Service unavailable' };
     }
 
     res.json({

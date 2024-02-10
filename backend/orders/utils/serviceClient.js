@@ -116,12 +116,12 @@ class ServiceClient {
   }
 
   /**
-   * Get multiple products
+   * Get multiple products (bulk)
    */
   async getProducts(productIds) {
     try {
       const client = this.createClient(config.services.products);
-      const response = await client.post('/api/v1/products/batch', {
+      const response = await client.post('/api/v1/service/products/bulk', {
         productIds
       });
       
@@ -140,13 +140,37 @@ class ServiceClient {
   }
 
   /**
-   * Update product stock
+   * Check product inventory
    */
-  async updateProductStock(productId, newStock) {
+  async checkInventory(items) {
     try {
       const client = this.createClient(config.services.products);
-      const response = await client.put(`/api/v1/products/${productId}/stock`, {
-        stock: newStock
+      const response = await client.post('/api/v1/service/products/inventory-check', {
+        items
+      });
+      
+      if (response.data.success) {
+        return response.data.data;
+      } else {
+        throw new Error(response.data.message || 'Failed to check inventory');
+      }
+    } catch (error) {
+      logger.error('Error checking inventory:', error);
+      if (error.response) {
+        throw new Error(`Products service error: ${error.response.data.message || error.message}`);
+      }
+      throw new Error('Products service unavailable');
+    }
+  }
+
+  /**
+   * Update product stock (bulk)
+   */
+  async updateProductStock(updates) {
+    try {
+      const client = this.createClient(config.services.products);
+      const response = await client.put('/api/v1/service/products/stock', {
+        updates
       });
       
       if (response.data.success) {
@@ -186,13 +210,13 @@ class ServiceClient {
   }
 
   /**
-   * Mark media files as used
+   * Mark media files as used (bulk)
    */
   async markMediaAsUsed(fileIds) {
     try {
       const client = this.createClient(config.services.media);
-      const response = await client.post('/api/v1/media/mark-used', {
-        ids: fileIds
+      const response = await client.post('/api/v1/media/bulk-mark-used', {
+        fileIds: fileIds
       });
       
       if (response.data.success) {
@@ -210,10 +234,157 @@ class ServiceClient {
   }
 
   /**
+   * Validate media files (bulk)
+   */
+  async validateMediaFiles(fileIds) {
+    try {
+      const client = this.createClient(config.services.media);
+      const response = await client.post('/api/v1/media/validate', {
+        fileIds: fileIds
+      });
+      
+      if (response.data.success) {
+        return response.data.data;
+      } else {
+        throw new Error(response.data.message || 'Failed to validate media files');
+      }
+    } catch (error) {
+      logger.error('Error validating media files:', error);
+      if (error.response) {
+        throw new Error(`Media service error: ${error.response.data.message || error.message}`);
+      }
+      throw new Error('Media service unavailable');
+    }
+  }
+
+  /**
+   * Get multiple customers (bulk)
+   */
+  async getCustomers(customerIds) {
+    try {
+      const client = this.createClient(config.services.customer);
+      const response = await client.post('/api/v1/customers/service/bulk', {
+        customerIds
+      });
+      
+      if (response.data.success) {
+        return response.data.data;
+      } else {
+        throw new Error(response.data.message || 'Failed to fetch customers');
+      }
+    } catch (error) {
+      logger.error('Error fetching customers:', error);
+      if (error.response) {
+        throw new Error(`Customer service error: ${error.response.data.message || error.message}`);
+      }
+      throw new Error('Customer service unavailable');
+    }
+  }
+
+  /**
+   * Verify customer is active
+   */
+  async verifyCustomer(customerId) {
+    try {
+      const client = this.createClient(config.services.customer);
+      const response = await client.post('/api/v1/customers/service/verify', {
+        customerId
+      });
+      
+      if (response.data.success) {
+        return response.data.data;
+      } else {
+        throw new Error(response.data.message || 'Failed to verify customer');
+      }
+    } catch (error) {
+      logger.error('Error verifying customer:', error);
+      if (error.response) {
+        throw new Error(`Customer service error: ${error.response.data.message || error.message}`);
+      }
+      throw new Error('Customer service unavailable');
+    }
+  }
+
+  /**
+   * Get multiple sellers (bulk)
+   */
+  async getSellers(sellerIds) {
+    try {
+      const client = this.createClient(config.services.sellers);
+      const response = await client.post('/api/v1/sellers/service/bulk', {
+        sellerIds
+      });
+      
+      if (response.data.success) {
+        return response.data.data;
+      } else {
+        throw new Error(response.data.message || 'Failed to fetch sellers');
+      }
+    } catch (error) {
+      logger.error('Error fetching sellers:', error);
+      if (error.response) {
+        throw new Error(`Sellers service error: ${error.response.data.message || error.message}`);
+      }
+      throw new Error('Sellers service unavailable');
+    }
+  }
+
+  /**
+   * Verify seller is active
+   */
+  async verifySeller(sellerId) {
+    try {
+      const client = this.createClient(config.services.sellers);
+      const response = await client.post('/api/v1/sellers/service/verify', {
+        sellerId
+      });
+      
+      if (response.data.success) {
+        return response.data.data;
+      } else {
+        throw new Error(response.data.message || 'Failed to verify seller');
+      }
+    } catch (error) {
+      logger.error('Error verifying seller:', error);
+      if (error.response) {
+        throw new Error(`Sellers service error: ${error.response.data.message || error.message}`);
+      }
+      throw new Error('Sellers service unavailable');
+    }
+  }
+
+  /**
+   * Send notification email
+   */
+  async sendNotification(templateCode, recipientEmail, recipientName, data) {
+    try {
+      const client = this.createClient(config.services.notifications);
+      const response = await client.post('/api/v1/send', {
+        template: templateCode,
+        recipient_email: recipientEmail,
+        recipient_name: recipientName,
+        data: data
+      });
+      
+      if (response.data.success) {
+        return response.data.data;
+      } else {
+        throw new Error(response.data.message || 'Failed to send notification');
+      }
+    } catch (error) {
+      logger.error('Error sending notification:', error);
+      if (error.response) {
+        throw new Error(`Notifications service error: ${error.response.data.message || error.message}`);
+      }
+      throw new Error('Notifications service unavailable');
+    }
+  }
+
+  /**
    * Validate service connectivity
    */
   async healthCheck() {
-    const services = ['customer', 'sellers', 'products', 'media'];
+    const services = ['customer', 'sellers', 'products', 'media', 'notifications'];
     const results = {};
     
     for (const service of services) {
