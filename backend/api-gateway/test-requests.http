@@ -1,0 +1,99 @@
+### API Gateway Test Requests
+### Base URL: http://localhost:8000
+
+### Gateway Health Check
+GET http://localhost:8000/health
+
+### All Services Status
+GET http://localhost:8000/api/status
+
+### API Documentation
+GET http://localhost:8000/api/docs
+
+### Customer Service - Signup (through Gateway)
+POST http://localhost:8000/api/customer/customers/signup
+Content-Type: application/json
+
+{
+  "firstName": "John",
+  "lastName": "Doe",
+  "email": "john.doe@example.com",
+  "password": "password123",
+  "confirmPassword": "password123",
+  "phone": "+1234567890"
+}
+
+### Customer Service - Signin (through Gateway)
+POST http://localhost:8000/api/customer/customers/signin
+Content-Type: application/json
+
+{
+  "email": "john.doe@example.com",
+  "password": "password123"
+}
+
+### Seller Service - List Sellers (through Gateway)
+GET http://localhost:8000/api/sellers/sellers/list
+
+### Products Service - List Products (through Gateway)
+GET http://localhost:8000/api/products/products
+Content-Type: application/json
+
+### Products Service - Create Product (through Gateway)
+POST http://localhost:8000/api/products/products
+Content-Type: application/json
+
+{
+  "name": "Test Product",
+  "description": "A test product created through API Gateway",
+  "price": 29.99,
+  "category": "Electronics",
+  "sellerId": "seller123",
+  "stock": 100,
+  "tags": ["test", "electronics"]
+}
+
+### Media Service - Upload File (through Gateway)
+POST http://localhost:8000/api/media/media/upload
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="test.jpg"
+Content-Type: image/jpeg
+
+< ./test-image.jpg
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="upload_type"
+
+profile
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### Orders Service - Get Cart (through Gateway) - Requires Auth Token
+GET http://localhost:8000/api/orders/cart
+Authorization: Bearer YOUR_JWT_TOKEN_HERE
+
+### Admin Service - Dashboard Stats (through Gateway)
+GET http://localhost:8000/api/admin/dashboard/stats
+
+### Admin Service - Services Health (through Gateway)
+GET http://localhost:8000/api/admin/services/health
+
+### Notifications Service - Send Email (through Gateway)
+POST http://localhost:8000/api/notifications/send
+Content-Type: application/json
+
+{
+  "template": "welcome",
+  "recipient_email": "test@example.com",
+  "recipient_name": "Test User",
+  "data": {
+    "name": "Test User",
+    "welcome_message": "Welcome to our platform!"
+  }
+}
+
+### Error Test - Non-existent Route
+GET http://localhost:8000/api/nonexistent/test
+
+### Error Test - Service Down (assuming service is down)
+GET http://localhost:8000/api/customer/customers
