@@ -54,7 +54,7 @@ const ProductDetail = () => {
 
   const handleQuantityChange = (e) => {
     const value = parseInt(e.target.value);
-    if (value > 0 && value <= product.stockQuantity) {
+    if (value > 0 && value <= product.stock) {
       setQuantity(value);
     }
   };
@@ -139,8 +139,8 @@ const ProductDetail = () => {
               <Badge color="secondary" className="mr-2">
                 {product.category}
               </Badge>
-              {product.stockQuantity > 0 ? (
-                <Badge color="success">In Stock ({product.stockQuantity})</Badge>
+              {product.stock > 0 ? (
+                <Badge color="success">In Stock ({product.stock})</Badge>
               ) : (
                 <Badge color="danger">Out of Stock</Badge>
               )}
@@ -163,7 +163,7 @@ const ProductDetail = () => {
               </div>
             )}
 
-            {product.stockQuantity > 0 && (
+            {product.stock > 0 && (
               <div className="mb-4">
                 <Row>
                   <Col md="6">
@@ -173,7 +173,7 @@ const ProductDetail = () => {
                         type="number"
                         id="quantity"
                         min="1"
-                        max={product.stockQuantity}
+                        max={product.stock}
                         value={quantity}
                         onChange={handleQuantityChange}
                       />

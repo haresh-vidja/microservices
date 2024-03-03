@@ -32,7 +32,7 @@ const Products = () => {
       
       if (response.data.success) {
         setProducts(response.data.data.products || []);
-        setTotalPages(response.data.data.totalPages || 1);
+        setTotalPages(response.data.data.pagination?.pages || 1);
       }
     } catch (error) {
       console.error('Error fetching products:', error);
@@ -160,7 +160,7 @@ const Products = () => {
                       ${product.price}
                     </CardText>
                     <CardText className="small text-muted">
-                      Stock: {product.stockQuantity}
+                      Stock: {product.stock}
                     </CardText>
                     <div className="mt-auto">
                       <Button 
@@ -178,9 +178,9 @@ const Products = () => {
                         size="sm" 
                         block
                         onClick={() => addToCart(product)}
-                        disabled={product.stockQuantity === 0}
+                        disabled={product.stock === 0}
                       >
-                        {product.stockQuantity === 0 ? 'Out of Stock' : 'Add to Cart'}
+                        {product.stock === 0 ? 'Out of Stock' : 'Add to Cart'}
                       </Button>
                     </div>
                   </CardBody>

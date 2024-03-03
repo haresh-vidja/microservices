@@ -31,8 +31,8 @@ const SellerDashboard = () => {
       
       const [sellerRes, productsRes, ordersRes] = await Promise.all([
         axios.get('/api/sellers/profile', { headers }),
-        axios.get('/api/products/seller/my-products', { headers }),
-        axios.get('/api/orders/seller/my-orders', { headers })
+        axios.get('/api/products?sellerId=' + JSON.parse(localStorage.getItem('sellerData'))?.id, { headers }),
+        axios.get('/api/orders?sellerId=' + JSON.parse(localStorage.getItem('sellerData'))?.id, { headers })
       ]);
 
       if (sellerRes.data.success) {
@@ -40,10 +40,10 @@ const SellerDashboard = () => {
       }
 
       if (productsRes.data.success) {
-        setProducts(productsRes.data.data);
+        setProducts(productsRes.data.data.products || []);
         setStats(prev => ({
           ...prev,
-          totalProducts: productsRes.data.data.length
+          totalProducts: (productsRes.data.data.products || []).length
         }));
       }
 
@@ -161,7 +161,7 @@ const SellerDashboard = () => {
                       <tr key={product._id}>
                         <td>{product.name}</td>
                         <td>${product.price}</td>
-                        <td>{product.stockQuantity}</td>
+                        <td>{product.stock}</td>
                       </tr>
                     ))}
                   </tbody>

@@ -14,7 +14,7 @@ const Home = () => {
   const fetchFeaturedProducts = async () => {
     try {
       const response = await axios.get('/api/products?limit=6');
-      setFeaturedProducts(response.data.products || []);
+      setFeaturedProducts(response.data.data?.products || []);
     } catch (error) {
       console.error('Error fetching featured products:', error);
     } finally {

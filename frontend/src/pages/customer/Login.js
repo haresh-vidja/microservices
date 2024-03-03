@@ -27,7 +27,7 @@ const CustomerLogin = () => {
     setError('');
 
     try {
-      const response = await axios.post('/api/customer/auth/login', formData);
+      const response = await axios.post('/api/customer/signin', formData);
       
       if (response.data.success) {
         localStorage.setItem('customerToken', response.data.data.accessToken);

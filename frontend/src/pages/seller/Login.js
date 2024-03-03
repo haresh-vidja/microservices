@@ -27,7 +27,7 @@ const SellerLogin = () => {
     setError('');
 
     try {
-      const response = await axios.post('/api/sellers/auth/login', formData);
+      const response = await axios.post('/api/sellers/signin', formData);
       
       if (response.data.success) {
         localStorage.setItem('sellerToken', response.data.data.accessToken);
