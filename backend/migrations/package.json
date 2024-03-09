@@ -1,0 +1,28 @@
+{
+  "name": "microservices-migrations",
+  "version": "1.0.0",
+  "description": "Database migrations and seed data for microservices",
+  "main": "run_migrations.js",
+  "scripts": {
+    "migrate": "node run_migrations.js",
+    "migrate:customers": "node run_migrations.js customers",
+    "migrate:sellers": "node run_migrations.js sellers", 
+    "migrate:admin": "node run_migrations.js admin",
+    "migrate:products": "node run_migrations.js products",
+    "migrate:reset": "node run_migrations.js reset"
+  },
+  "dependencies": {
+    "mongoose": "^5.13.14",
+    "bcryptjs": "^2.4.3"
+  },
+  "devDependencies": {},
+  "keywords": [
+    "migrations",
+    "seed",
+    "database",
+    "mongodb",
+    "microservices"
+  ],
+  "author": "Haresh Vidja",
+  "license": "MIT"
+}
