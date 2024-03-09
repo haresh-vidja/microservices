@@ -101,10 +101,9 @@ class SellerService {
     try {
       const { email, password } = credentials;
 
-      // Find seller with password field and populate role
+      // Find seller with password field (handle missing role gracefully)
       const seller = await Seller.findOne({ email })
-        .select('+password +loginAttempts +lockUntil')
-        .populate('role', 'name permissions level');
+        .select('+password +loginAttempts +lockUntil');
       
       if (!seller) {
         throw new Error('Invalid email or password');
@@ -143,8 +142,8 @@ class SellerService {
 
       return {
         seller: seller.toJSON(),
-        role: seller.role,
-        token,
+        role: seller.role || null,
+        accessToken: token,
         refreshToken
       };
     } catch (error) {
