@@ -41,7 +41,7 @@ const SellerRegister = () => {
 
     try {
       const { confirmPassword, ...submitData } = formData;
-      const response = await axios.post('/api/sellers/signup', submitData);
+      const response = await axios.post('http://localhost:3002/api/v1/sellers/signup', submitData);
       
       if (response.data.success) {
         toast.success('Registration successful! Please login.');
