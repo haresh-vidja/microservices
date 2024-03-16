@@ -1,0 +1,4 @@
+2025-08-08 19:09:13 [INFO]: Database connected successfully {"service":"customer-service"}
+2025-08-08 19:09:13 [INFO]: Customer Service running on http://localhost:3001 {"service":"customer-service"}
+2025-08-08 19:09:13 [INFO]: Environment: development {"service":"customer-service"}
+2025-08-08 19:09:13 [INFO]: API Documentation: http://localhost:3001/api-docs {"service":"customer-service"}

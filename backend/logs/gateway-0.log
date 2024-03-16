@@ -1,0 +1,196 @@
+2025-08-08T19:02:47: Error: Cannot find module 'express'
+2025-08-08T19:02:47: Require stack:
+2025-08-08T19:02:47: - /home/haresh/Desktop/services/backend/api-gateway/index.js
+2025-08-08T19:02:47:     at Module._resolveFilename (node:internal/modules/cjs/loader:1405:15)
+2025-08-08T19:02:47:     at Hook._require.Module.require (/home/haresh/.nvm/versions/node/v24.1.0/lib/node_modules/pm2/node_modules/require-in-the-middle/index.js:81:25)
+2025-08-08T19:02:47:     at require (node:internal/modules/helpers:135:16)
+2025-08-08T19:02:47:     at Object.<anonymous> (/home/haresh/Desktop/services/backend/api-gateway/index.js:6:17)
+2025-08-08T19:02:47:     at Module._compile (node:internal/modules/cjs/loader:1734:14)
+2025-08-08T19:02:47:     at Object..js (node:internal/modules/cjs/loader:1899:10)
+2025-08-08T19:02:47:     at Module.load (node:internal/modules/cjs/loader:1469:32)
+2025-08-08T19:02:47:     at Module._load (node:internal/modules/cjs/loader:1286:12)
+2025-08-08T19:02:47:     at Object.<anonymous> (/home/haresh/.nvm/versions/node/v24.1.0/lib/node_modules/pm2/lib/ProcessContainerFork.js:33:23)
+2025-08-08T19:02:47:     at Module._compile (node:internal/modules/cjs/loader:1734:14) {
+2025-08-08T19:02:47:   code: 'MODULE_NOT_FOUND',
+2025-08-08T19:02:47:   requireStack: [ '/home/haresh/Desktop/services/backend/api-gateway/index.js' ]
+2025-08-08T19:02:47: }
+2025-08-08T19:02:51: Error: Cannot find module 'express'
+2025-08-08T19:02:51: Require stack:
+2025-08-08T19:02:51: - /home/haresh/Desktop/services/backend/api-gateway/index.js
+2025-08-08T19:02:51:     at Module._resolveFilename (node:internal/modules/cjs/loader:1405:15)
+2025-08-08T19:02:51:     at Hook._require.Module.require (/home/haresh/.nvm/versions/node/v24.1.0/lib/node_modules/pm2/node_modules/require-in-the-middle/index.js:81:25)
+2025-08-08T19:02:51:     at require (node:internal/modules/helpers:135:16)
+2025-08-08T19:02:51:     at Object.<anonymous> (/home/haresh/Desktop/services/backend/api-gateway/index.js:6:17)
+2025-08-08T19:02:51:     at Module._compile (node:internal/modules/cjs/loader:1734:14)
+2025-08-08T19:02:51:     at Object..js (node:internal/modules/cjs/loader:1899:10)
+2025-08-08T19:02:51:     at Module.load (node:internal/modules/cjs/loader:1469:32)
+2025-08-08T19:02:51:     at Module._load (node:internal/modules/cjs/loader:1286:12)
+2025-08-08T19:02:51:     at Object.<anonymous> (/home/haresh/.nvm/versions/node/v24.1.0/lib/node_modules/pm2/lib/ProcessContainerFork.js:33:23)
+2025-08-08T19:02:51:     at Module._compile (node:internal/modules/cjs/loader:1734:14) {
+2025-08-08T19:02:51:   code: 'MODULE_NOT_FOUND',
+2025-08-08T19:02:51:   requireStack: [ '/home/haresh/Desktop/services/backend/api-gateway/index.js' ]
+2025-08-08T19:02:51: }
+2025-08-08T19:02:55: Error: Cannot find module 'express'
+2025-08-08T19:02:55: Require stack:
+2025-08-08T19:02:55: - /home/haresh/Desktop/services/backend/api-gateway/index.js
+2025-08-08T19:02:55:     at Module._resolveFilename (node:internal/modules/cjs/loader:1405:15)
+2025-08-08T19:02:55:     at Hook._require.Module.require (/home/haresh/.nvm/versions/node/v24.1.0/lib/node_modules/pm2/node_modules/require-in-the-middle/index.js:81:25)
+2025-08-08T19:02:55:     at require (node:internal/modules/helpers:135:16)
+2025-08-08T19:02:55:     at Object.<anonymous> (/home/haresh/Desktop/services/backend/api-gateway/index.js:6:17)
+2025-08-08T19:02:55:     at Module._compile (node:internal/modules/cjs/loader:1734:14)
+2025-08-08T19:02:55:     at Object..js (node:internal/modules/cjs/loader:1899:10)
+2025-08-08T19:02:55:     at Module.load (node:internal/modules/cjs/loader:1469:32)
+2025-08-08T19:02:55:     at Module._load (node:internal/modules/cjs/loader:1286:12)
+2025-08-08T19:02:55:     at Object.<anonymous> (/home/haresh/.nvm/versions/node/v24.1.0/lib/node_modules/pm2/lib/ProcessContainerFork.js:33:23)
+2025-08-08T19:02:55:     at Module._compile (node:internal/modules/cjs/loader:1734:14) {
+2025-08-08T19:02:55:   code: 'MODULE_NOT_FOUND',
+2025-08-08T19:02:55:   requireStack: [ '/home/haresh/Desktop/services/backend/api-gateway/index.js' ]
+2025-08-08T19:02:55: }
+2025-08-08T19:03:00: Error: Cannot find module 'express'
+2025-08-08T19:03:00: Require stack:
+2025-08-08T19:03:00: - /home/haresh/Desktop/services/backend/api-gateway/index.js
+2025-08-08T19:03:00:     at Module._resolveFilename (node:internal/modules/cjs/loader:1405:15)
+2025-08-08T19:03:00:     at Hook._require.Module.require (/home/haresh/.nvm/versions/node/v24.1.0/lib/node_modules/pm2/node_modules/require-in-the-middle/index.js:81:25)
+2025-08-08T19:03:00:     at require (node:internal/modules/helpers:135:16)
+2025-08-08T19:03:00:     at Object.<anonymous> (/home/haresh/Desktop/services/backend/api-gateway/index.js:6:17)
+2025-08-08T19:03:00:     at Module._compile (node:internal/modules/cjs/loader:1734:14)
+2025-08-08T19:03:00:     at Object..js (node:internal/modules/cjs/loader:1899:10)
+2025-08-08T19:03:00:     at Module.load (node:internal/modules/cjs/loader:1469:32)
+2025-08-08T19:03:00:     at Module._load (node:internal/modules/cjs/loader:1286:12)
+2025-08-08T19:03:00:     at Object.<anonymous> (/home/haresh/.nvm/versions/node/v24.1.0/lib/node_modules/pm2/lib/ProcessContainerFork.js:33:23)
+2025-08-08T19:03:00:     at Module._compile (node:internal/modules/cjs/loader:1734:14) {
+2025-08-08T19:03:00:   code: 'MODULE_NOT_FOUND',
+2025-08-08T19:03:00:   requireStack: [ '/home/haresh/Desktop/services/backend/api-gateway/index.js' ]
+2025-08-08T19:03:00: }
+2025-08-08T19:03:04: Error: Cannot find module 'express'
+2025-08-08T19:03:04: Require stack:
+2025-08-08T19:03:04: - /home/haresh/Desktop/services/backend/api-gateway/index.js
+2025-08-08T19:03:04:     at Module._resolveFilename (node:internal/modules/cjs/loader:1405:15)
+2025-08-08T19:03:04:     at Hook._require.Module.require (/home/haresh/.nvm/versions/node/v24.1.0/lib/node_modules/pm2/node_modules/require-in-the-middle/index.js:81:25)
+2025-08-08T19:03:04:     at require (node:internal/modules/helpers:135:16)
+2025-08-08T19:03:04:     at Object.<anonymous> (/home/haresh/Desktop/services/backend/api-gateway/index.js:6:17)
+2025-08-08T19:03:04:     at Module._compile (node:internal/modules/cjs/loader:1734:14)
+2025-08-08T19:03:04:     at Object..js (node:internal/modules/cjs/loader:1899:10)
+2025-08-08T19:03:04:     at Module.load (node:internal/modules/cjs/loader:1469:32)
+2025-08-08T19:03:04:     at Module._load (node:internal/modules/cjs/loader:1286:12)
+2025-08-08T19:03:04:     at Object.<anonymous> (/home/haresh/.nvm/versions/node/v24.1.0/lib/node_modules/pm2/lib/ProcessContainerFork.js:33:23)
+2025-08-08T19:03:04:     at Module._compile (node:internal/modules/cjs/loader:1734:14) {
+2025-08-08T19:03:04:   code: 'MODULE_NOT_FOUND',
+2025-08-08T19:03:04:   requireStack: [ '/home/haresh/Desktop/services/backend/api-gateway/index.js' ]
+2025-08-08T19:03:04: }
+2025-08-08T19:09:11: [HPM] Proxy created: /  -> http://localhost:3001
+2025-08-08T19:09:11: [HPM] Proxy rewrite rule created: "^/api/customer" ~> "/api/v1"
+2025-08-08T19:09:11: [HPM] Proxy created: /  -> http://localhost:3002
+2025-08-08T19:09:11: [HPM] Proxy rewrite rule created: "^/api/sellers" ~> "/api/v1"
+2025-08-08T19:09:11: [HPM] Proxy created: /  -> http://localhost:3003
+2025-08-08T19:09:11: [HPM] Proxy rewrite rule created: "^/api/media" ~> "/api/v1"
+2025-08-08T19:09:11: [HPM] Proxy created: /  -> http://localhost:3004
+2025-08-08T19:09:11: [HPM] Proxy rewrite rule created: "^/api/products" ~> "/api/v1"
+2025-08-08T19:09:11: [HPM] Proxy created: /  -> http://localhost:3005
+2025-08-08T19:09:11: [HPM] Proxy rewrite rule created: "^/api/orders" ~> "/api/v1"
+2025-08-08T19:09:11: [HPM] Proxy created: /  -> http://localhost:3006
+2025-08-08T19:09:11: [HPM] Proxy rewrite rule created: "^/api/admin" ~> "/api/v1"
+2025-08-08T19:09:11: [HPM] Proxy created: /  -> http://localhost:3007
+2025-08-08T19:09:11: [HPM] Proxy rewrite rule created: "^/api/notifications" ~> "/api/v1"
+2025-08-08T19:09:11: 🚀 API Gateway running on http://localhost:8000
+2025-08-08T19:09:11: 📚 API Documentation: http://localhost:8000/api/docs
+2025-08-08T19:09:11: 🏥 Health Check: http://localhost:8000/health
+2025-08-08T19:09:11: 📊 Service Status: http://localhost:8000/api/status
+2025-08-08T19:09:11: 
+2025-08-08T19:09:11: 📡 Available Services:
+2025-08-08T19:09:11:    • CUSTOMER: /api/customer -> http://localhost:3001
+2025-08-08T19:09:11:    • SELLERS: /api/sellers -> http://localhost:3002
+2025-08-08T19:09:11:    • MEDIA: /api/media -> http://localhost:3003
+2025-08-08T19:09:11:    • PRODUCTS: /api/products -> http://localhost:3004
+2025-08-08T19:09:11:    • ORDERS: /api/orders -> http://localhost:3005
+2025-08-08T19:09:11:    • ADMIN: /api/admin -> http://localhost:3006
+2025-08-08T19:09:11:    • NOTIFICATIONS: /api/notifications -> http://localhost:3007
+2025-08-08T19:09:11: 
+2025-08-08T19:09:11: ⚡ Gateway ready to proxy requests to 7 microservices!
+2025-08-08T19:09:28: Error: Cannot find module 'axios'
+2025-08-08T19:09:28: Require stack:
+2025-08-08T19:09:28: - /home/haresh/Desktop/services/backend/api-gateway/index.js
+2025-08-08T19:09:28:     at Module._resolveFilename (node:internal/modules/cjs/loader:1405:15)
+2025-08-08T19:09:28:     at Hook._require.Module.require (/home/haresh/.nvm/versions/node/v24.1.0/lib/node_modules/pm2/node_modules/require-in-the-middle/index.js:81:25)
+2025-08-08T19:09:28:     at require (node:internal/modules/helpers:135:16)
+2025-08-08T19:09:28:     at /home/haresh/Desktop/services/backend/api-gateway/index.js:88:17
+2025-08-08T19:09:28:     at Layer.handle [as handle_request] (/home/haresh/Desktop/services/backend/api-gateway/node_modules/express/lib/router/layer.js:95:5)
+2025-08-08T19:09:28:     at next (/home/haresh/Desktop/services/backend/api-gateway/node_modules/express/lib/router/route.js:149:13)
+2025-08-08T19:09:28:     at Route.dispatch (/home/haresh/Desktop/services/backend/api-gateway/node_modules/express/lib/router/route.js:119:3)
+2025-08-08T19:09:28:     at Layer.handle [as handle_request] (/home/haresh/Desktop/services/backend/api-gateway/node_modules/express/lib/router/layer.js:95:5)
+2025-08-08T19:09:28:     at /home/haresh/Desktop/services/backend/api-gateway/node_modules/express/lib/router/index.js:284:15
+2025-08-08T19:09:28:     at router.process_params (/home/haresh/Desktop/services/backend/api-gateway/node_modules/express/lib/router/index.js:346:12) {
+2025-08-08T19:09:28:   code: 'MODULE_NOT_FOUND',
+2025-08-08T19:09:28:   requireStack: [ '/home/haresh/Desktop/services/backend/api-gateway/index.js' ]
+2025-08-08T19:09:28: }
+2025-08-08T19:13:57: (node:109584) [DEP0060] DeprecationWarning: The `util._extend` API is deprecated. Please use Object.assign() instead.
+2025-08-08T19:13:57: (Use `node --trace-deprecation ...` to show where the warning was created)
+2025-08-08T19:13:57: [2025-08-08T13:43:57.916Z] GET /api/v1?limit=6 -> http://localhost:3004/api/v1?limit=6
+2025-08-08T19:14:51: [2025-08-08T13:44:51.246Z] POST /api/v1/signin -> http://localhost:3002/api/v1/signin
+2025-08-08T19:15:21: [HPM] ECONNRESET: Error: socket hang up
+2025-08-08T19:15:21:     at Socket.socketCloseListener (node:_http_client:491:27)
+2025-08-08T19:15:21:     at Socket.emit (node:events:519:35)
+2025-08-08T19:15:21:     at TCP.<anonymous> (node:net:351:12) {
+2025-08-08T19:15:21:   code: 'ECONNRESET'
+2025-08-08T19:15:21: }
+2025-08-08T19:15:22: [2025-08-08T13:45:22.593Z] POST /api/v1/signin -> http://localhost:3002/api/v1/signin
+2025-08-08T19:15:52: [HPM] ECONNRESET: Error: socket hang up
+2025-08-08T19:15:52:     at Socket.socketCloseListener (node:_http_client:491:27)
+2025-08-08T19:15:52:     at Socket.emit (node:events:519:35)
+2025-08-08T19:15:52:     at TCP.<anonymous> (node:net:351:12) {
+2025-08-08T19:15:52:   code: 'ECONNRESET'
+2025-08-08T19:15:52: }
+2025-08-08T19:16:05: [2025-08-08T13:46:05.147Z] POST /api/v1/signin -> http://localhost:3002/api/v1/signin
+2025-08-08T19:16:25: [2025-08-08T13:46:25.690Z] POST /api/v1/signin -> http://localhost:3002/api/v1/signin
+2025-08-08T19:16:35: [HPM] ECONNRESET: Error: socket hang up
+2025-08-08T19:16:35:     at Socket.socketCloseListener (node:_http_client:491:27)
+2025-08-08T19:16:35:     at Socket.emit (node:events:519:35)
+2025-08-08T19:16:35:     at TCP.<anonymous> (node:net:351:12) {
+2025-08-08T19:16:35:   code: 'ECONNRESET'
+2025-08-08T19:16:35: }
+2025-08-08T19:16:55: [HPM] ECONNRESET: Error: socket hang up
+2025-08-08T19:16:55:     at Socket.socketCloseListener (node:_http_client:491:27)
+2025-08-08T19:16:55:     at Socket.emit (node:events:519:35)
+2025-08-08T19:16:55:     at TCP.<anonymous> (node:net:351:12) {
+2025-08-08T19:16:55:   code: 'ECONNRESET'
+2025-08-08T19:16:55: }
+2025-08-08T19:16:57: [2025-08-08T13:46:57.773Z] POST /api/v1/signin -> http://localhost:3002/api/v1/signin
+2025-08-08T19:17:27: [HPM] ECONNRESET: Error: socket hang up
+2025-08-08T19:17:27:     at Socket.socketCloseListener (node:_http_client:491:27)
+2025-08-08T19:17:27:     at Socket.emit (node:events:519:35)
+2025-08-08T19:17:27:     at TCP.<anonymous> (node:net:351:12) {
+2025-08-08T19:17:27:   code: 'ECONNRESET'
+2025-08-08T19:17:27: }
+2025-08-08T19:22:02: [2025-08-08T13:52:02.918Z] POST /api/v1/signin -> http://localhost:3002/api/v1/signin
+2025-08-08T19:22:21: [2025-08-08T13:52:21.326Z] GET /api/v1/health -> http://localhost:3002/api/v1/health
+2025-08-08T19:22:32: [HPM] ECONNRESET: Error: socket hang up
+2025-08-08T19:22:32:     at Socket.socketCloseListener (node:_http_client:491:27)
+2025-08-08T19:22:32:     at Socket.emit (node:events:519:35)
+2025-08-08T19:22:32:     at TCP.<anonymous> (node:net:351:12) {
+2025-08-08T19:22:32:   code: 'ECONNRESET'
+2025-08-08T19:22:32: }
+2025-08-08T19:27:44: [2025-08-08T13:57:44.737Z] POST /api/v1/signin -> http://localhost:3002/api/v1/signin
+2025-08-08T19:27:57: [2025-08-08T13:57:57.304Z] POST /api/v1/signin -> http://localhost:3002/api/v1/signin
+2025-08-08T19:28:14: [HPM] ECONNRESET: Error: socket hang up
+2025-08-08T19:28:14:     at Socket.socketCloseListener (node:_http_client:491:27)
+2025-08-08T19:28:14:     at Socket.emit (node:events:519:35)
+2025-08-08T19:28:14:     at TCP.<anonymous> (node:net:351:12) {
+2025-08-08T19:28:14:   code: 'ECONNRESET'
+2025-08-08T19:28:14: }
+2025-08-08T19:28:27: [HPM] ECONNRESET: Error: socket hang up
+2025-08-08T19:28:27:     at Socket.socketCloseListener (node:_http_client:491:27)
+2025-08-08T19:28:27:     at Socket.emit (node:events:519:35)
+2025-08-08T19:28:27:     at TCP.<anonymous> (node:net:351:12) {
+2025-08-08T19:28:27:   code: 'ECONNRESET'
+2025-08-08T19:28:27: }
+2025-08-08T19:28:49: [2025-08-08T13:58:49.103Z] POST /api/v1/signin -> http://localhost:3002/api/v1/signin
+2025-08-08T19:29:19: [HPM] ECONNRESET: Error: socket hang up
+2025-08-08T19:29:19:     at Socket.socketCloseListener (node:_http_client:491:27)
+2025-08-08T19:29:19:     at Socket.emit (node:events:519:35)
+2025-08-08T19:29:19:     at TCP.<anonymous> (node:net:351:12) {
+2025-08-08T19:29:19:   code: 'ECONNRESET'
+2025-08-08T19:29:19: }
+2025-08-08T19:31:48: [2025-08-08T14:01:48.616Z] GET /api/v1?sellerId=6895fc2fc8976794b14a5fce -> http://localhost:3004/api/v1?sellerId=6895fc2fc8976794b14a5fce
+2025-08-08T19:31:48: [2025-08-08T14:01:48.618Z] GET /api/v1?sellerId=6895fc2fc8976794b14a5fce -> http://localhost:3005/api/v1?sellerId=6895fc2fc8976794b14a5fce
+2025-08-08T19:31:48: Proxy error for orders: connect ECONNREFUSED 127.0.0.1:3005
+2025-08-08T19:31:48: [HPM] Error occurred while proxying request localhost:8000/api/v1?sellerId=6895fc2fc8976794b14a5fce to http://localhost:3005/ [ECONNREFUSED] (https://nodejs.org/api/errors.html#errors_common_system_errors)
