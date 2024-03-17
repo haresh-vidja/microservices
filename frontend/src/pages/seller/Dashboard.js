@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, CardBody, CardTitle, CardText, Button, Table, Badge } from 'reactstrap';
-import { useHistory } from 'react-router-dom';
+import { useHistory, Link } from 'react-router-dom';
 import axios from 'axios';
 
 const SellerDashboard = () => {
@@ -143,7 +143,7 @@ const SellerDashboard = () => {
             <CardBody>
               <div className="d-flex justify-content-between align-items-center mb-3">
                 <h5>Recent Products</h5>
-                <Button color="primary" size="sm">
+                <Button color="primary" size="sm" tag={Link} to="/seller/add-product">
                   Add Product
                 </Button>
               </div>
