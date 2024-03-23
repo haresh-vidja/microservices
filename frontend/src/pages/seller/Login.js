@@ -34,7 +34,10 @@ const SellerLogin = () => {
         localStorage.setItem('sellerData', JSON.stringify(response.data.data.seller));
         
         toast.success('Login successful!');
-        history.push('/seller/dashboard');
+        console.log('Redirecting to /seller/dashboard');
+        setTimeout(() => {
+          history.push('/seller/dashboard');
+        }, 1000);
       }
     } catch (error) {
       const errorMessage = error.response?.data?.message || 'Login failed. Please try again.';

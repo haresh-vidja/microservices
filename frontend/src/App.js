@@ -31,8 +31,8 @@ function App() {
             <Route path="/customer/profile" component={Profile} />
             <Route path="/seller/login" component={SellerLogin} />
             <Route path="/seller/register" component={SellerRegister} />
-            <Route path="/seller/dashboard" component={SellerDashboard} />
-            <Route path="/seller/add-product" component={AddProduct} />
+            <Route exact path="/seller/dashboard" component={SellerDashboard} />
+            <Route exact path="/seller/add-product" component={AddProduct} />
             <Route path="/products" component={Products} />
             <Route path="/product/:id" component={ProductDetail} />
             <Route path="/cart" component={Cart} />

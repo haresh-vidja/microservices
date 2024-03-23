@@ -60,10 +60,11 @@ const verifyToken = async (req, res, next) => {
       });
     }
 
-    if (!seller.role || !seller.role.isActive) {
+    // Only check role if it exists (role is now optional)
+    if (seller.role && !seller.role.isActive) {
       return res.status(401).json({
         success: false,
-        message: 'Invalid or inactive role'
+        message: 'Inactive role'
       });
     }
 
@@ -74,7 +75,7 @@ const verifyToken = async (req, res, next) => {
       firstName: decoded.firstName,
       lastName: decoded.lastName,
       role: seller.role,
-      permissions: seller.role.permissions
+      permissions: seller.role ? seller.role.permissions : {}
     };
 
     next();

@@ -17,10 +17,13 @@ const SellerDashboard = () => {
 
   useEffect(() => {
     const token = localStorage.getItem('sellerToken');
+    console.log('Dashboard loading, token:', token ? 'exists' : 'missing');
     if (!token) {
+      console.log('No token found, redirecting to login');
       history.push('/seller/login');
       return;
     }
+    console.log('Token found, fetching dashboard data');
     fetchDashboardData();
   }, [history]);
 
@@ -61,8 +64,11 @@ const SellerDashboard = () => {
       }
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
+      console.log('Error details:', error.response?.data);
       if (error.response?.status === 401) {
+        console.log('401 error, removing token and redirecting');
         localStorage.removeItem('sellerToken');
+        localStorage.removeItem('sellerData');
         history.push('/seller/login');
       }
     } finally {
