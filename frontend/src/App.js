@@ -17,6 +17,7 @@ import Cart from './pages/Cart';
 import Profile from './pages/customer/Profile';
 import SellerDashboard from './pages/seller/Dashboard';
 import AddProduct from './pages/seller/AddProduct';
+import EditProduct from './pages/seller/EditProduct';
 
 function App() {
   return (
@@ -33,6 +34,7 @@ function App() {
             <Route path="/seller/register" component={SellerRegister} />
             <Route exact path="/seller/dashboard" component={SellerDashboard} />
             <Route exact path="/seller/add-product" component={AddProduct} />
+            <Route exact path="/seller/edit-product/:id" component={EditProduct} />
             <Route path="/products" component={Products} />
             <Route path="/product/:id" component={ProductDetail} />
             <Route path="/cart" component={Cart} />

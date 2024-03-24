@@ -1,12 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, CardBody, Form, FormGroup, Label, Input, Button, Alert } from 'reactstrap';
-import { useHistory, Link } from 'react-router-dom';
+import { useHistory, useParams, Link } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import ImageUploader from '../../components/common/ImageUploader';
 import MultiImageUploader from '../../components/common/MultiImageUploader';
 
-const AddProduct = () => {
+const EditProduct = () => {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -19,8 +19,63 @@ const AddProduct = () => {
   const [otherImages, setOtherImages] = useState([]);
   const [mainImageIndex, setMainImageIndex] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [fetchingProduct, setFetchingProduct] = useState(true);
   const [error, setError] = useState('');
   const history = useHistory();
+  const { id: productId } = useParams();
+
+  useEffect(() => {
+    fetchProduct();
+  }, [productId]);
+
+  const fetchProduct = async () => {
+    try {
+      const token = localStorage.getItem('sellerToken');
+      if (!token) {
+        history.push('/seller/login');
+        return;
+      }
+
+      const response = await axios.get(`/api/products/${productId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (response.data.success) {
+        const product = response.data.data;
+        setFormData({
+          name: product.name || '',
+          description: product.description || '',
+          price: product.price || '',
+          category: product.category || 'electronics',
+          stock: product.stock || '',
+          specifications: product.specifications ? JSON.stringify(product.specifications, null, 2) : ''
+        });
+
+        // Set images
+        if (product.images && product.images.length > 0) {
+          // Create image objects from URLs for existing images
+          const imageObjects = product.images.map((url, index) => ({
+            id: `existing-${index}`,
+            url: url,
+            originalFilename: `image-${index + 1}.jpg`
+          }));
+          
+          setMainImage(imageObjects[0]);
+          if (imageObjects.length > 1) {
+            setOtherImages(imageObjects.slice(1));
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching product:', error);
+      toast.error('Failed to fetch product details');
+      if (error.response?.status === 401) {
+        history.push('/seller/login');
+      }
+    } finally {
+      setFetchingProduct(false);
+    }
+  };
 
   const handleChange = (e) => {
     setFormData({
@@ -44,8 +99,6 @@ const AddProduct = () => {
 
     try {
       const token = localStorage.getItem('sellerToken');
-      const sellerData = JSON.parse(localStorage.getItem('sellerData'));
-      
       if (!token) {
         history.push('/seller/login');
         return;
@@ -67,29 +120,41 @@ const AddProduct = () => {
         ...formData,
         price: parseFloat(formData.price),
         stock: parseInt(formData.stock),
-        sellerId: sellerData.id,
         images: allImages,
         specifications: formData.specifications ? JSON.parse(formData.specifications) : {},
         mainImageId: mainImage?.id || null,
         imageIds: [mainImage?.id, ...otherImages.map(img => img?.id)].filter(Boolean)
       };
 
-      const response = await axios.post('/api/products', productData, {
+      const response = await axios.put(`/api/products/${productId}`, productData, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
       if (response.data.success) {
-        toast.success('Product added successfully!');
+        toast.success('Product updated successfully!');
         history.push('/seller/dashboard');
       }
     } catch (error) {
-      const errorMessage = error.response?.data?.message || 'Failed to add product. Please try again.';
+      const errorMessage = error.response?.data?.message || 'Failed to update product. Please try again.';
       setError(errorMessage);
       toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
   };
+
+  if (fetchingProduct) {
+    return (
+      <Container className="py-5">
+        <div className="text-center">
+          <div className="spinner-border text-primary" role="status">
+            <span className="sr-only">Loading...</span>
+          </div>
+          <p className="mt-2">Loading product details...</p>
+        </div>
+      </Container>
+    );
+  }
 
   return (
     <Container className="py-5">
@@ -98,7 +163,7 @@ const AddProduct = () => {
           <Card>
             <CardBody>
               <div className="d-flex justify-content-between align-items-center mb-4">
-                <h2>Add New Product</h2>
+                <h2>Edit Product</h2>
                 <Button color="secondary" outline tag={Link} to="/seller/dashboard">
                   Back to Dashboard
                 </Button>
@@ -251,7 +316,7 @@ const AddProduct = () => {
                     disabled={loading}
                     style={{ minWidth: '120px' }}
                   >
-                    {loading ? 'Adding...' : 'Add Product'}
+                    {loading ? 'Updating...' : 'Update Product'}
                   </Button>
                 </div>
               </Form>
@@ -263,4 +328,4 @@ const AddProduct = () => {
   );
 };
 
-export default AddProduct;
+export default EditProduct;

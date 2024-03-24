@@ -160,6 +160,7 @@ const SellerDashboard = () => {
                       <th>Name</th>
                       <th>Price</th>
                       <th>Stock</th>
+                      <th>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -168,6 +169,17 @@ const SellerDashboard = () => {
                         <td>{product.name}</td>
                         <td>${product.price}</td>
                         <td>{product.stock}</td>
+                        <td>
+                          <Button
+                            color="link"
+                            size="sm"
+                            tag={Link}
+                            to={`/seller/edit-product/${product._id}`}
+                            className="p-0"
+                          >
+                            Edit
+                          </Button>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
