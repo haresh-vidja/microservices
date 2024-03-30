@@ -28,7 +28,7 @@ const Products = () => {
         ...(category && { category })
       };
 
-      const response = await axios.get('/api/products', { params });
+      const response = await axios.get('/api/products/products', { params });
       
       if (response.data.success) {
         setProducts(response.data.data.products || []);

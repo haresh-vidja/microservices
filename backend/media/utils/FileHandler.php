@@ -213,9 +213,9 @@ class FileHandler {
             // Resample image to create thumbnail
             imagecopyresampled(
                 $thumbnail, $source,
-                0, 0, $crop_x, $crop_y,
+                0, 0, (int)$crop_x, (int)$crop_y,
                 $thumb_width, $thumb_height,
-                $crop_size, $crop_size
+                (int)$crop_size, (int)$crop_size
             );
 
             // Generate thumbnail filename

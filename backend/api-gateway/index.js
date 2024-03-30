@@ -121,6 +121,8 @@ Object.entries(services).forEach(([serviceName, config]) => {
     pathRewrite: config.pathRewrite,
     timeout: 30000,
     proxyTimeout: 30000,
+    followRedirects: true,
+    secure: false,
     
     // Handle errors
     onError: (err, req, res) => {
@@ -137,6 +139,14 @@ Object.entries(services).forEach(([serviceName, config]) => {
     onProxyReq: (proxyReq, req, res) => {
       if (process.env.NODE_ENV === 'development') {
         console.log(`[${new Date().toISOString()}] ${req.method} ${req.url} -> ${config.target}${proxyReq.path}`);
+      }
+      
+      // Fix for POST/PUT requests with body
+      if (req.body && (req.method === 'POST' || req.method === 'PUT' || req.method === 'PATCH')) {
+        const bodyData = JSON.stringify(req.body);
+        proxyReq.setHeader('Content-Type', 'application/json');
+        proxyReq.setHeader('Content-Length', Buffer.byteLength(bodyData));
+        proxyReq.write(bodyData);
       }
     },
     

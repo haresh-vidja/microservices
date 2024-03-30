@@ -36,7 +36,7 @@ const EditProduct = () => {
         return;
       }
 
-      const response = await axios.get(`/api/products/${productId}`, {
+      const response = await axios.get(`/api/products/products/${productId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -126,7 +126,7 @@ const EditProduct = () => {
         imageIds: [mainImage?.id, ...otherImages.map(img => img?.id)].filter(Boolean)
       };
 
-      const response = await axios.put(`/api/products/${productId}`, productData, {
+      const response = await axios.put(`/api/products/products/${productId}`, productData, {
         headers: { Authorization: `Bearer ${token}` }
       });
 

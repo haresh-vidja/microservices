@@ -34,7 +34,7 @@ const SellerDashboard = () => {
       
       const [sellerRes, productsRes, ordersRes] = await Promise.all([
         axios.get('http://localhost:3002/api/v1/sellers/profile', { headers }),
-        axios.get('/api/products?sellerId=' + JSON.parse(localStorage.getItem('sellerData'))?.id, { headers }),
+        axios.get('/api/products/products?sellerId=' + JSON.parse(localStorage.getItem('sellerData'))?.id, { headers }),
         axios.get('/api/orders?sellerId=' + JSON.parse(localStorage.getItem('sellerData'))?.id, { headers })
       ]);
 

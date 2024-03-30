@@ -74,7 +74,7 @@ const AddProduct = () => {
         imageIds: [mainImage?.id, ...otherImages.map(img => img?.id)].filter(Boolean)
       };
 
-      const response = await axios.post('/api/products', productData, {
+      const response = await axios.post('/api/products/products', productData, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
