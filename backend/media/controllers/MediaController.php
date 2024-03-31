@@ -4,9 +4,9 @@
  * Handles API requests for media operations
  */
 
-require_once '../models/MediaFile.php';
-require_once '../utils/FileHandler.php';
-require_once '../config/database.php';
+require_once __DIR__ . '/../models/MediaFile.php';
+require_once __DIR__ . '/../utils/FileHandler.php';
+require_once __DIR__ . '/../config/database.php';
 
 class MediaController {
     private $db;
@@ -403,6 +403,48 @@ class MediaController {
                 'results' => $results,
                 'summary' => $summary
             ]);
+
+        } catch (Exception $e) {
+            $this->sendResponse(500, false, $e->getMessage());
+        }
+    }
+
+    /**
+     * Mark files as not used
+     */
+    public function markAsNotUsed() {
+        try {
+            $input = json_decode(file_get_contents('php://input'), true);
+            
+            if (!isset($input['ids']) || !is_array($input['ids'])) {
+                $this->sendResponse(400, false, 'Invalid or missing ids array');
+                return;
+            }
+
+            $ids = $input['ids'];
+            if (empty($ids)) {
+                $this->sendResponse(400, false, 'No IDs provided');
+                return;
+            }
+
+            // Validate UUIDs
+            foreach ($ids as $id) {
+                if (!$this->isValidUUID($id)) {
+                    $this->sendResponse(400, false, 'Invalid UUID format: ' . $id);
+                    return;
+                }
+            }
+
+            $updated_count = $this->media_file->markMultipleAsNotUsed($ids);
+
+            if ($updated_count !== false) {
+                $this->sendResponse(200, true, "Successfully marked {$updated_count} files as not used", [
+                    'updated_count' => $updated_count,
+                    'ids' => $ids
+                ]);
+            } else {
+                $this->sendResponse(500, false, 'Failed to update files');
+            }
 
         } catch (Exception $e) {
             $this->sendResponse(500, false, $e->getMessage());

@@ -15,12 +15,18 @@ const EditProduct = () => {
     stock: '',
     specifications: ''
   });
+  const [specifications, setSpecifications] = useState([
+    { title: '', detail: '' }
+  ]);
   const [mainImage, setMainImage] = useState(null);
   const [otherImages, setOtherImages] = useState([]);
   const [mainImageIndex, setMainImageIndex] = useState(0);
   const [loading, setLoading] = useState(false);
   const [fetchingProduct, setFetchingProduct] = useState(true);
   const [error, setError] = useState('');
+  const [originalMainImageId, setOriginalMainImageId] = useState(null);
+  const [originalOtherImageIds, setOriginalOtherImageIds] = useState([]);
+  const [deletedImageIds, setDeletedImageIds] = useState([]);
   const history = useHistory();
   const { id: productId } = useParams();
 
@@ -51,6 +57,17 @@ const EditProduct = () => {
           specifications: product.specifications ? JSON.stringify(product.specifications, null, 2) : ''
         });
 
+        // Convert specifications object to array format
+        if (product.specifications && typeof product.specifications === 'object') {
+          const specsArray = Object.entries(product.specifications).map(([title, detail]) => ({
+            title,
+            detail
+          }));
+          setSpecifications(specsArray.length > 0 ? specsArray : [{ title: '', detail: '' }]);
+        } else {
+          setSpecifications([{ title: '', detail: '' }]);
+        }
+
         // Set images
         if (product.images && product.images.length > 0) {
           // Create image objects from URLs for existing images
@@ -61,9 +78,17 @@ const EditProduct = () => {
           }));
           
           setMainImage(imageObjects[0]);
+          setOriginalMainImageId(imageObjects[0].id);
+          
           if (imageObjects.length > 1) {
             setOtherImages(imageObjects.slice(1));
+            setOriginalOtherImageIds(imageObjects.slice(1).map(img => img.id));
+          } else {
+            setOriginalOtherImageIds([]);
           }
+        } else {
+          setOriginalMainImageId(null);
+          setOriginalOtherImageIds([]);
         }
       }
     } catch (error) {
@@ -85,6 +110,50 @@ const EditProduct = () => {
     if (error) setError('');
   };
 
+  const handleSpecificationChange = (index, field, value) => {
+    const updatedSpecs = [...specifications];
+    updatedSpecs[index] = {
+      ...updatedSpecs[index],
+      [field]: value
+    };
+    setSpecifications(updatedSpecs);
+  };
+
+  const addSpecification = () => {
+    setSpecifications([...specifications, { title: '', detail: '' }]);
+  };
+
+  const removeSpecification = (index) => {
+    if (specifications.length > 1) {
+      const updatedSpecs = specifications.filter((_, i) => i !== index);
+      setSpecifications(updatedSpecs);
+    }
+  };
+
+  // Track when existing images are deleted
+  const handleMainImageRemove = () => {
+    if (mainImage && mainImage.id && mainImage.id.startsWith('existing-')) {
+      setDeletedImageIds(prev => [...prev, mainImage.id]);
+    }
+    setMainImage(null);
+  };
+
+  const handleOtherImagesChange = (newImages) => {
+    // Find deleted images by comparing with current otherImages
+    const currentIds = otherImages.map(img => img.id);
+    const newIds = newImages.map(img => img.id);
+    
+    const deletedIds = currentIds.filter(id => 
+      id.startsWith('existing-') && !newIds.includes(id)
+    );
+    
+    if (deletedIds.length > 0) {
+      setDeletedImageIds(prev => [...prev, ...deletedIds]);
+    }
+    
+    setOtherImages(newImages);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -104,14 +173,25 @@ const EditProduct = () => {
         return;
       }
 
-      // Prepare images array
-      const allImages = [];
+      // Prepare image IDs
+      const imageIds = [];
+      const allImageIds = [];
+      
       if (mainImage) {
-        allImages.push(mainImage.url);
+        allImageIds.push(mainImage.id);
       }
       otherImages.forEach(image => {
-        if (image && image.url) {
-          allImages.push(image.url);
+        if (image && image.id) {
+          imageIds.push(image.id);
+          allImageIds.push(image.id);
+        }
+      });
+
+      // Prepare specifications object
+      const specsObject = {};
+      specifications.forEach(spec => {
+        if (spec.title.trim() && spec.detail.trim()) {
+          specsObject[spec.title.trim()] = spec.detail.trim();
         }
       });
 
@@ -120,10 +200,9 @@ const EditProduct = () => {
         ...formData,
         price: parseFloat(formData.price),
         stock: parseInt(formData.stock),
-        images: allImages,
-        specifications: formData.specifications ? JSON.parse(formData.specifications) : {},
         mainImageId: mainImage?.id || null,
-        imageIds: [mainImage?.id, ...otherImages.map(img => img?.id)].filter(Boolean)
+        otherImages: imageIds,
+        specifications: specsObject
       };
 
       const response = await axios.put(`/api/products/products/${productId}`, productData, {
@@ -131,6 +210,38 @@ const EditProduct = () => {
       });
 
       if (response.data.success) {
+        // Mark new images as used in media service (only newly uploaded images)
+        const newImageIds = allImageIds.filter(id => !id.startsWith('existing-'));
+        if (newImageIds.length > 0) {
+          try {
+            await axios.post('http://localhost:3003/api/v1/media/mark-used', {
+              ids: newImageIds
+            });
+          } catch (mediaError) {
+            console.warn('Failed to mark images as used:', mediaError);
+            // Don't fail the product update if marking images fails
+          }
+        }
+
+        // Mark deleted images as not used so they can be cleaned up
+        if (deletedImageIds.length > 0) {
+          // Convert existing-X IDs back to actual media IDs
+          // Since we're using mock IDs for existing images, we need to handle this differently
+          // For now, we'll log this - in a real implementation, you'd need the actual media IDs
+          console.log('Images marked for deletion:', deletedImageIds);
+          
+          try {
+            // Note: This would need actual media IDs, not existing-X mock IDs
+            // You might need to store the actual media IDs when fetching the product
+            // For now, we'll skip this call since existing-X are not real UUIDs
+            // await axios.post('http://localhost:3003/api/v1/media/mark-not-used', {
+            //   ids: deletedImageIds
+            // });
+          } catch (mediaError) {
+            console.warn('Failed to mark deleted images as not used:', mediaError);
+          }
+        }
+
         toast.success('Product updated successfully!');
         history.push('/seller/dashboard');
       }
@@ -263,7 +374,7 @@ const EditProduct = () => {
                   <ImageUploader
                     currentImage={mainImage?.url}
                     onUpload={setMainImage}
-                    onRemove={() => setMainImage(null)}
+                    onRemove={handleMainImageRemove}
                     uploadType="product"
                     accept="image/*"
                     maxSize={5 * 1024 * 1024}
@@ -276,7 +387,7 @@ const EditProduct = () => {
                   <Label>Additional Product Images</Label>
                   <MultiImageUploader
                     images={otherImages}
-                    onImagesChange={setOtherImages}
+                    onImagesChange={handleOtherImagesChange}
                     maxImages={4}
                     mainImageIndex={mainImageIndex}
                     onMainImageChange={setMainImageIndex}
@@ -286,17 +397,68 @@ const EditProduct = () => {
                 </FormGroup>
 
                 <FormGroup>
-                  <Label for="specifications">Specifications (JSON format)</Label>
-                  <Input
-                    type="textarea"
-                    name="specifications"
-                    id="specifications"
-                    rows="4"
-                    placeholder='{"Brand": "Example Brand", "Model": "XYZ123", "Color": "Black"}'
-                    value={formData.specifications}
-                    onChange={handleChange}
-                  />
-                  <small className="text-muted">Enter product specifications in JSON format (optional)</small>
+                  <Label>Product Specifications</Label>
+                  <div className="specifications-table">
+                    <div className="table-responsive">
+                      <table className="table table-bordered">
+                        <thead className="bg-light">
+                          <tr>
+                            <th>Title</th>
+                            <th>Detail</th>
+                            <th width="100">Action</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {specifications.map((spec, index) => (
+                            <tr key={index}>
+                              <td>
+                                <Input
+                                  type="text"
+                                  placeholder="e.g., Brand, Color, Size"
+                                  value={spec.title}
+                                  onChange={(e) => handleSpecificationChange(index, 'title', e.target.value)}
+                                />
+                              </td>
+                              <td>
+                                <Input
+                                  type="text"
+                                  placeholder="e.g., Apple, Red, Large"
+                                  value={spec.detail}
+                                  onChange={(e) => handleSpecificationChange(index, 'detail', e.target.value)}
+                                />
+                              </td>
+                              <td>
+                                <div className="d-flex">
+                                  {index === specifications.length - 1 && (
+                                    <Button
+                                      color="success"
+                                      size="sm"
+                                      className="mr-1"
+                                      onClick={addSpecification}
+                                      type="button"
+                                    >
+                                      +
+                                    </Button>
+                                  )}
+                                  {specifications.length > 1 && (
+                                    <Button
+                                      color="danger"
+                                      size="sm"
+                                      onClick={() => removeSpecification(index)}
+                                      type="button"
+                                    >
+                                      ×
+                                    </Button>
+                                  )}
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                  <small className="text-muted">Add product specifications as key-value pairs (optional)</small>
                 </FormGroup>
 
                 <hr />

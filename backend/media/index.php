@@ -83,6 +83,15 @@ try {
                             }
                             break;
                             
+                        case 'mark-not-used':
+                            if ($method === 'POST') {
+                                $controller->markAsNotUsed();
+                            } else {
+                                http_response_code(405);
+                                echo json_encode(['success' => false, 'message' => 'Method not allowed']);
+                            }
+                            break;
+                            
                         case 'cleanup':
                             if ($method === 'POST') {
                                 $controller->cleanupTemporaryFiles();

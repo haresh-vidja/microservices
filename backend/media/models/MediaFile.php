@@ -4,7 +4,7 @@
  * Handles database operations for media files
  */
 
-require_once '../config/database.php';
+require_once __DIR__ . '/../config/database.php';
 
 class MediaFile {
     private $conn;
@@ -28,16 +28,31 @@ class MediaFile {
     }
 
     /**
+     * Generate UUID v4 for SQLite
+     */
+    private function generateUUID() {
+        return sprintf('%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
+            mt_rand(0, 0xffff), mt_rand(0, 0xffff),
+            mt_rand(0, 0xffff),
+            mt_rand(0, 0x0fff) | 0x4000,
+            mt_rand(0, 0x3fff) | 0x8000,
+            mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff)
+        );
+    }
+
+    /**
      * Create new media file record
      */
     public function create() {
+        // Generate UUID for SQLite
+        $id = $this->generateUUID();
+        
         $query = "INSERT INTO " . $this->table_name . "
-                (original_filename, stored_filename, file_size, file_extension, 
+                (id, original_filename, stored_filename, file_size, file_extension, 
                  content_type, upload_type, access_url, thumbnail_url, is_used)
                 VALUES
-                (:original_filename, :stored_filename, :file_size, :file_extension,
-                 :content_type, :upload_type, :access_url, :thumbnail_url, :is_used)
-                RETURNING id";
+                (:id, :original_filename, :stored_filename, :file_size, :file_extension,
+                 :content_type, :upload_type, :access_url, :thumbnail_url, :is_used)";
 
         $stmt = $this->conn->prepare($query);
 
@@ -50,6 +65,7 @@ class MediaFile {
         $this->access_url = htmlspecialchars(strip_tags($this->access_url));
 
         // Bind values
+        $stmt->bindParam(":id", $id);
         $stmt->bindParam(":original_filename", $this->original_filename);
         $stmt->bindParam(":stored_filename", $this->stored_filename);
         $stmt->bindParam(":file_size", $this->file_size, PDO::PARAM_INT);
@@ -61,8 +77,7 @@ class MediaFile {
         $stmt->bindParam(":is_used", $this->is_used, PDO::PARAM_INT);
 
         if($stmt->execute()) {
-            $result = $stmt->fetch(PDO::FETCH_ASSOC);
-            return $result['id'];
+            return $id;
         }
 
         return false;
@@ -129,6 +144,28 @@ class MediaFile {
         $placeholders = str_repeat('?,', count($ids) - 1) . '?';
         $query = "UPDATE " . $this->table_name . " 
                 SET is_used = 1, updated_at = CURRENT_TIMESTAMP 
+                WHERE id IN ($placeholders)";
+
+        $stmt = $this->conn->prepare($query);
+        
+        if($stmt->execute($ids)) {
+            return $stmt->rowCount();
+        }
+
+        return false;
+    }
+
+    /**
+     * Mark multiple files as not used
+     */
+    public function markMultipleAsNotUsed($ids) {
+        if (empty($ids)) {
+            return false;
+        }
+
+        $placeholders = str_repeat('?,', count($ids) - 1) . '?';
+        $query = "UPDATE " . $this->table_name . " 
+                SET is_used = 0, updated_at = CURRENT_TIMESTAMP 
                 WHERE id IN ($placeholders)";
 
         $stmt = $this->conn->prepare($query);
