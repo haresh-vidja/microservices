@@ -286,20 +286,37 @@ class SellerService {
    * Update seller profile
    * @param {String} sellerId - Seller ID
    * @param {Object} updateData - Data to update
-   * @returns {Object} Updated seller profile
+   * @returns {Object} Updated seller profile with business
    */
   async updateProfile(sellerId, updateData) {
     try {
-      // Prevent updating sensitive fields
-      delete updateData.password;
-      delete updateData.email;
-      delete updateData.refreshToken;
-      delete updateData.role;
-      delete updateData.isVerified;
+      // Separate seller and business data
+      const { 
+        businessName, 
+        businessType, 
+        description, 
+        website,
+        industry,
+        categories,
+        establishedDate,
+        employeeCount,
+        address: businessAddress,
+        phone: businessPhone,
+        ...sellerData 
+      } = updateData;
 
+      // Prevent updating sensitive seller fields
+      delete sellerData.password;
+      delete sellerData.email;
+      delete sellerData.refreshToken;
+      delete sellerData.role;
+      delete sellerData.isVerified;
+      delete sellerData.businessDocuments;
+
+      // Update seller data
       const seller = await Seller.findByIdAndUpdate(
         sellerId,
-        { $set: updateData },
+        { $set: sellerData },
         { new: true, runValidators: true }
       ).populate('role', 'name level');
 
@@ -307,9 +324,49 @@ class SellerService {
         throw new Error('Seller not found');
       }
 
+      // Prepare business update data
+      const businessUpdateData = {};
+      
+      if (businessName !== undefined) businessUpdateData.businessName = businessName;
+      if (businessType !== undefined) businessUpdateData.businessType = businessType;
+      if (description !== undefined) businessUpdateData.description = description;
+      if (website !== undefined) businessUpdateData.website = website;
+      if (industry !== undefined) businessUpdateData.industry = industry;
+      if (categories !== undefined) businessUpdateData.categories = categories;
+      if (establishedDate !== undefined) businessUpdateData.establishedDate = establishedDate;
+      if (employeeCount !== undefined) businessUpdateData.employeeCount = employeeCount;
+      if (businessPhone !== undefined) businessUpdateData.phone = businessPhone;
+      if (businessAddress !== undefined) businessUpdateData.address = businessAddress;
+
+      // Update business profile if business data provided
+      let business = null;
+      if (Object.keys(businessUpdateData).length > 0) {
+        business = await Business.findOneAndUpdate(
+          { sellerId },
+          { $set: businessUpdateData },
+          { new: true, runValidators: true, upsert: false }
+        );
+        
+        if (!business) {
+          // Create business profile if it doesn't exist
+          business = new Business({
+            sellerId,
+            email: seller.email,
+            ...businessUpdateData
+          });
+          await business.save();
+        }
+      } else {
+        // Get existing business profile
+        business = await Business.findOne({ sellerId });
+      }
+
       logger.info(`Seller profile updated: ${seller.email}`);
 
-      return seller.toJSON();
+      return {
+        seller: seller.toJSON(),
+        business: business ? business.toJSON() : null
+      };
     } catch (error) {
       logger.error('Error updating seller profile:', error);
       throw error;

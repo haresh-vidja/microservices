@@ -1,0 +1,90 @@
+# Sellers Service - .gitignore
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Logs
+logs/*
+!logs/.gitkeep
+*.log
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+database/
+db/
+
+# Coverage directory
+lib-cov
+coverage/
+*.lcov
+.nyc_output
+
+# Build outputs
+build/
+dist/
+
+# Cache
+.cache/
+.npm
+.yarn
+.eslintcache
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+temp/
+tmp/
+
+# SSL certificates
+*.pem
+*.key
+*.crt
+*.cert
+
+# Backup files
+*.bak
+*.backup
+
+# Sellers service specific
+seller-uploads/
+business-documents/
+verification-docs/
+profile-images/
+store-banners/
+seller-data-export/
+business-analytics/
+reports/
+
+# API testing files
+test-profile-api.http.bak
+seller-test-data.json

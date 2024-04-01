@@ -47,6 +47,36 @@ const sellerSchemas = {
     phone: Joi.string().pattern(/^[0-9]{10,15}$/).required(),
     businessName: Joi.string().trim().max(100).optional(),
     roleId: Joi.string().optional()
+  }),
+  
+  updateProfile: Joi.object({
+    // Seller personal data
+    firstName: Joi.string().trim().min(2).max(50).optional(),
+    lastName: Joi.string().trim().min(2).max(50).optional(),
+    phone: Joi.string().pattern(/^[0-9]{10,15}$/).optional(),
+    profileImage: Joi.string().optional(),
+    dateOfBirth: Joi.date().optional(),
+    gender: Joi.string().valid('male', 'female', 'other').optional(),
+    
+    // Business data
+    businessName: Joi.string().trim().max(100).optional(),
+    businessType: Joi.string().valid('individual', 'partnership', 'llc', 'corporation', 'other').optional(),
+    description: Joi.string().max(1000).optional(),
+    website: Joi.string().uri().optional(),
+    industry: Joi.string().trim().max(100).optional(),
+    categories: Joi.array().items(Joi.string()).optional(),
+    establishedDate: Joi.date().optional(),
+    employeeCount: Joi.number().min(1).optional(),
+    
+    // Business address
+    address: Joi.object({
+      street: Joi.string().trim().max(100).required(),
+      street2: Joi.string().trim().max(100).optional(),
+      city: Joi.string().trim().max(50).required(),
+      state: Joi.string().trim().max(50).required(),
+      country: Joi.string().trim().max(50).required(),
+      postalCode: Joi.string().trim().pattern(/^[A-Za-z0-9\s-]{3,10}$/).required()
+    }).optional()
   })
 };
 
@@ -309,6 +339,7 @@ router.get('/profile',
  */
 router.put('/profile',
   verifyToken,
+  validate(sellerSchemas.updateProfile),
   asyncHandler(async (req, res) => {
     const result = await sellerService.updateProfile(req.seller.id, req.body);
     sendSuccess(res, result, 'Profile updated successfully');
