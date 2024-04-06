@@ -1,4 +1,328 @@
+# =======================
+# Previous entries
+# =======================
 older_code
 documents
 .claude
 .vscode
+
+# =======================
+# Node.js Dependencies
+# =======================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+
+# =======================
+# Environment Variables
+# =======================
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.example
+config.js
+config.json
+
+# =======================
+# Global Logs (service-specific logs handled in individual .gitignore)
+# =======================
+*.log
+
+# =======================
+# Runtime data
+# =======================
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# =======================
+# Build outputs
+# =======================
+build/
+dist/
+.next/
+out/
+.nuxt/
+.vuepress/dist
+.serverless/
+.fusebox/
+.dynamodb/
+
+# =======================
+# Cache directories
+# =======================
+.cache/
+.npm
+.yarn
+.eslintcache
+.node_repl_history
+.nyc_output
+.parcel-cache
+
+# =======================
+# Test coverage
+# =======================
+coverage/
+*.lcov
+.nyc_output
+
+# =======================
+# Dependency directories
+# =======================
+node_modules/
+jspm_packages/
+
+# =======================
+# Package manager files
+# =======================
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# =======================
+# Global Database files (service-specific handled individually)
+# =======================
+# Most database files now handled by service-specific .gitignore files
+*.db-journal
+
+# =======================
+# Global Media and Upload files (service-specific handled individually)
+# =======================
+# Most upload directories now handled by service-specific .gitignore files
+temp/
+tmp/
+
+# =======================
+# IDE and Editor files
+# =======================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# =======================
+# OS generated files
+# =======================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# =======================
+# Temporary files
+# =======================
+*.tmp
+*.temp
+.tmp/
+.temp/
+tmp/
+temp/
+
+# =======================
+# Process Manager files
+# =======================
+ecosystem.config.js.backup
+pm2.json
+
+# =======================
+# SSL certificates
+# =======================
+*.pem
+*.key
+*.crt
+*.cert
+ssl/
+certificates/
+
+# =======================
+# Backup files
+# =======================
+*.bak
+*.backup
+*~
+
+# =======================
+# Archive files
+# =======================
+*.zip
+*.tar.gz
+*.rar
+*.7z
+
+# =======================
+# Docker
+# =======================
+.dockerignore
+docker-compose.override.yml
+
+# =======================
+# Frontend specific (handled by frontend/.gitignore)
+# =======================
+# Frontend build and env files now handled by frontend/.gitignore
+
+# =======================
+# Backend specific
+# =======================
+# Service node_modules handled by individual .gitignore files
+# backend/*/node_modules/
+
+# PHP specific (for media service)
+backend/media/vendor/
+backend/media/composer.lock
+backend/media/.env
+
+# =======================
+# Testing
+# =======================
+test-results/
+cypress/videos/
+cypress/screenshots/
+coverage/
+.nyc_output/
+
+# =======================
+# Miscellaneous
+# =======================
+.git/
+*.pid
+*.seed
+*.pid.lock
+.lock-wscript
+lib-cov
+.grunt
+.lock-wscript
+build/Release
+.nyc_output
+.grunt
+bower_components
+.lock-wscript
+build/Release
+.coverage
+.nyc_output
+.grunt
+.lock-wscript
+typings/
+
+# =======================
+# Local development
+# =======================
+.local
+.cache
+.config/local
+local_settings.py
+instance/
+.webassets-cache
+
+# =======================
+# Error reports
+# =======================
+*.stackdump
+*.dmp
+
+# =======================
+# PM2 specific
+# =======================
+.pm2/
+
+# =======================
+# API Documentation
+# =======================
+apidoc/
+swagger-ui/
+
+# =======================
+# VSCode settings
+# =======================
+.vscode/settings.json
+.vscode/tasks.json
+.vscode/launch.json
+.vscode/extensions.json
+.vscode/c_cpp_properties.json
+.vscode/compile_commands.json
+
+# =======================
+# JetBrains IDEs
+# =======================
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# =======================
+# Vim
+# =======================
+*.swp
+*.swo
+*~
+
+# =======================
+# Emacs
+# =======================
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+.\#*
+
+# =======================
+# macOS
+# =======================
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+# =======================
+# Windows
+# =======================
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+# =======================
+# Linux
+# =======================
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
