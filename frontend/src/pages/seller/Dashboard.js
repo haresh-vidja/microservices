@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Card, CardBody, CardTitle, CardText, Button, Table, Badge } from 'reactstrap';
+import { Row, Col, Card, CardBody, CardTitle, CardText, Button, Table, Badge } from 'reactstrap';
 import { useHistory, Link } from 'react-router-dom';
 import axios from 'axios';
 
@@ -89,18 +89,16 @@ const SellerDashboard = () => {
 
   if (loading) {
     return (
-      <Container className="py-5">
-        <div className="loading-spinner">
-          <div className="spinner-border text-primary" role="status">
-            <span className="sr-only">Loading...</span>
-          </div>
+      <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '400px' }}>
+        <div className="spinner-border text-primary" role="status">
+          <span className="sr-only">Loading...</span>
         </div>
-      </Container>
+      </div>
     );
   }
 
   return (
-    <Container className="py-5">
+    <div>
       <Row>
         <Col>
           <h2 className="mb-4">Seller Dashboard</h2>
@@ -225,7 +223,7 @@ const SellerDashboard = () => {
           </Card>
         </Col>
       </Row>
-    </Container>
+    </div>
   );
 };
 

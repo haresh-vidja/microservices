@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Card, CardBody, Form, FormGroup, Label, Input, Button, Alert } from 'reactstrap';
+import { Row, Col, Card, CardBody, Form, FormGroup, Label, Input, Button, Alert } from 'reactstrap';
 import { useHistory, useParams, Link } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'react-toastify';
@@ -173,17 +173,29 @@ const EditProduct = () => {
         return;
       }
 
-      // Prepare image IDs
-      const imageIds = [];
+      // Prepare images array for the API (URL-based)
+      const images = [];
       const allImageIds = [];
       
       if (mainImage) {
-        allImageIds.push(mainImage.id);
+        images.push({
+          url: mainImage.url,
+          isPrimary: true
+        });
+        if (mainImage.id) {
+          allImageIds.push(mainImage.id);
+        }
       }
+      
       otherImages.forEach(image => {
-        if (image && image.id) {
-          imageIds.push(image.id);
-          allImageIds.push(image.id);
+        if (image && image.url) {
+          images.push({
+            url: image.url,
+            isPrimary: false
+          });
+          if (image.id) {
+            allImageIds.push(image.id);
+          }
         }
       });
 
@@ -200,8 +212,7 @@ const EditProduct = () => {
         ...formData,
         price: parseFloat(formData.price),
         stock: parseInt(formData.stock),
-        mainImageId: mainImage?.id || null,
-        otherImages: imageIds,
+        images: images,
         specifications: specsObject
       };
 
@@ -256,21 +267,20 @@ const EditProduct = () => {
 
   if (fetchingProduct) {
     return (
-      <Container className="py-5">
+      <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '400px' }}>
         <div className="text-center">
           <div className="spinner-border text-primary" role="status">
             <span className="sr-only">Loading...</span>
           </div>
           <p className="mt-2">Loading product details...</p>
         </div>
-      </Container>
+      </div>
     );
   }
 
   return (
-    <Container className="py-5">
-      <Row className="justify-content-center">
-        <Col md="8">
+    <Row className="justify-content-center">
+      <Col lg="10" xl="8">
           <Card>
             <CardBody>
               <div className="d-flex justify-content-between align-items-center mb-4">
@@ -484,9 +494,8 @@ const EditProduct = () => {
               </Form>
             </CardBody>
           </Card>
-        </Col>
-      </Row>
-    </Container>
+      </Col>
+    </Row>
   );
 };
 

@@ -9,15 +9,11 @@ import Footer from './components/common/Footer';
 import Home from './pages/Home';
 import CustomerLogin from './pages/customer/Login';
 import CustomerRegister from './pages/customer/Register';
-import SellerLogin from './pages/seller/Login';
-import SellerRegister from './pages/seller/Register';
 import Products from './pages/Products';
 import ProductDetail from './pages/ProductDetail';
 import Cart from './pages/Cart';
 import Profile from './pages/customer/Profile';
-import SellerDashboard from './pages/seller/Dashboard';
-import AddProduct from './pages/seller/AddProduct';
-import EditProduct from './pages/seller/EditProduct';
+import SellerApp from './pages/seller/SellerApp';
 
 function App() {
   return (
@@ -30,11 +26,7 @@ function App() {
             <Route path="/customer/login" component={CustomerLogin} />
             <Route path="/customer/register" component={CustomerRegister} />
             <Route path="/customer/profile" component={Profile} />
-            <Route path="/seller/login" component={SellerLogin} />
-            <Route path="/seller/register" component={SellerRegister} />
-            <Route exact path="/seller/dashboard" component={SellerDashboard} />
-            <Route exact path="/seller/add-product" component={AddProduct} />
-            <Route exact path="/seller/edit-product/:id" component={EditProduct} />
+            <Route path="/seller" component={SellerApp} />
             <Route path="/products" component={Products} />
             <Route path="/product/:id" component={ProductDetail} />
             <Route path="/cart" component={Cart} />

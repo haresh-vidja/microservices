@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Container, Row, Col, Card, CardBody, Form, FormGroup, Label, Input, Button, Alert } from 'reactstrap';
+import { Row, Col, Card, CardBody, Form, FormGroup, Label, Input, Button, Alert } from 'reactstrap';
 import { useHistory, Link } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'react-toastify';
@@ -15,6 +15,9 @@ const AddProduct = () => {
     stock: '',
     specifications: ''
   });
+  const [specifications, setSpecifications] = useState([
+    { title: '', detail: '' }
+  ]);
   const [mainImage, setMainImage] = useState(null);
   const [otherImages, setOtherImages] = useState([]);
   const [mainImageIndex, setMainImageIndex] = useState(0);
@@ -28,6 +31,26 @@ const AddProduct = () => {
       [e.target.name]: e.target.value
     });
     if (error) setError('');
+  };
+
+  const handleSpecificationChange = (index, field, value) => {
+    const updatedSpecs = [...specifications];
+    updatedSpecs[index] = {
+      ...updatedSpecs[index],
+      [field]: value
+    };
+    setSpecifications(updatedSpecs);
+  };
+
+  const addSpecification = () => {
+    setSpecifications([...specifications, { title: '', detail: '' }]);
+  };
+
+  const removeSpecification = (index) => {
+    if (specifications.length > 1) {
+      const updatedSpecs = specifications.filter((_, i) => i !== index);
+      setSpecifications(updatedSpecs);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -51,14 +74,35 @@ const AddProduct = () => {
         return;
       }
 
-      // Prepare images array
-      const allImages = [];
+      // Prepare images array for the API (URL-based)
+      const images = [];
+      const allImageIds = [];
+      
       if (mainImage) {
-        allImages.push(mainImage.url);
+        images.push({
+          url: mainImage.url,
+          isPrimary: true
+        });
+        allImageIds.push(mainImage.id);
       }
+      
       otherImages.forEach(image => {
         if (image && image.url) {
-          allImages.push(image.url);
+          images.push({
+            url: image.url,
+            isPrimary: false
+          });
+          if (image.id) {
+            allImageIds.push(image.id);
+          }
+        }
+      });
+
+      // Prepare specifications object
+      const specsObject = {};
+      specifications.forEach(spec => {
+        if (spec.title.trim() && spec.detail.trim()) {
+          specsObject[spec.title.trim()] = spec.detail.trim();
         }
       });
 
@@ -68,10 +112,8 @@ const AddProduct = () => {
         price: parseFloat(formData.price),
         stock: parseInt(formData.stock),
         sellerId: sellerData.id,
-        images: allImages,
-        specifications: formData.specifications ? JSON.parse(formData.specifications) : {},
-        mainImageId: mainImage?.id || null,
-        imageIds: [mainImage?.id, ...otherImages.map(img => img?.id)].filter(Boolean)
+        images: images,
+        specifications: specsObject
       };
 
       const response = await axios.post('/api/products/products', productData, {
@@ -79,6 +121,18 @@ const AddProduct = () => {
       });
 
       if (response.data.success) {
+        // Mark images as used in media service
+        if (allImageIds.length > 0) {
+          try {
+            await axios.post('http://localhost:3003/api/v1/media/mark-used', {
+              ids: allImageIds
+            });
+          } catch (mediaError) {
+            console.warn('Failed to mark images as used:', mediaError);
+            // Don't fail the product creation if marking images fails
+          }
+        }
+
         toast.success('Product added successfully!');
         history.push('/seller/dashboard');
       }
@@ -92,9 +146,8 @@ const AddProduct = () => {
   };
 
   return (
-    <Container className="py-5">
-      <Row className="justify-content-center">
-        <Col md="8">
+    <Row className="justify-content-center">
+      <Col lg="10" xl="8">
           <Card>
             <CardBody>
               <div className="d-flex justify-content-between align-items-center mb-4">
@@ -221,17 +274,68 @@ const AddProduct = () => {
                 </FormGroup>
 
                 <FormGroup>
-                  <Label for="specifications">Specifications (JSON format)</Label>
-                  <Input
-                    type="textarea"
-                    name="specifications"
-                    id="specifications"
-                    rows="4"
-                    placeholder='{"Brand": "Example Brand", "Model": "XYZ123", "Color": "Black"}'
-                    value={formData.specifications}
-                    onChange={handleChange}
-                  />
-                  <small className="text-muted">Enter product specifications in JSON format (optional)</small>
+                  <Label>Product Specifications</Label>
+                  <div className="specifications-table">
+                    <div className="table-responsive">
+                      <table className="table table-bordered">
+                        <thead className="bg-light">
+                          <tr>
+                            <th>Title</th>
+                            <th>Detail</th>
+                            <th width="100">Action</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {specifications.map((spec, index) => (
+                            <tr key={index}>
+                              <td>
+                                <Input
+                                  type="text"
+                                  placeholder="e.g., Brand, Color, Size"
+                                  value={spec.title}
+                                  onChange={(e) => handleSpecificationChange(index, 'title', e.target.value)}
+                                />
+                              </td>
+                              <td>
+                                <Input
+                                  type="text"
+                                  placeholder="e.g., Apple, Red, Large"
+                                  value={spec.detail}
+                                  onChange={(e) => handleSpecificationChange(index, 'detail', e.target.value)}
+                                />
+                              </td>
+                              <td>
+                                <div className="d-flex">
+                                  {index === specifications.length - 1 && (
+                                    <Button
+                                      color="success"
+                                      size="sm"
+                                      className="mr-1"
+                                      onClick={addSpecification}
+                                      type="button"
+                                    >
+                                      +
+                                    </Button>
+                                  )}
+                                  {specifications.length > 1 && (
+                                    <Button
+                                      color="danger"
+                                      size="sm"
+                                      onClick={() => removeSpecification(index)}
+                                      type="button"
+                                    >
+                                      ×
+                                    </Button>
+                                  )}
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                  <small className="text-muted">Add product specifications as key-value pairs (optional)</small>
                 </FormGroup>
 
                 <hr />
@@ -257,9 +361,8 @@ const AddProduct = () => {
               </Form>
             </CardBody>
           </Card>
-        </Col>
-      </Row>
-    </Container>
+      </Col>
+    </Row>
   );
 };
 
