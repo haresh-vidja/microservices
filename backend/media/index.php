@@ -74,12 +74,33 @@ try {
                             }
                             break;
                             
-                        case 'mark-used':
-                            if ($method === 'POST') {
-                                $controller->markAsUsed();
+                        case 'serve':
+                            if ($method === 'GET' && count($segments) >= 5) {
+                                $media_id = $segments[4];
+                                $controller->serveMedia($media_id);
                             } else {
-                                http_response_code(405);
-                                echo json_encode(['success' => false, 'message' => 'Method not allowed']);
+                                http_response_code(404);
+                                echo json_encode(['success' => false, 'message' => 'Media ID required']);
+                            }
+                            break;
+                            
+                        case 'serve-thumb':
+                            if ($method === 'GET' && count($segments) >= 5) {
+                                $media_id = $segments[4];
+                                $controller->serveMediaThumb($media_id);
+                            } else {
+                                http_response_code(404);
+                                echo json_encode(['success' => false, 'message' => 'Media ID required']);
+                            }
+                            break;
+                            
+                        case 'mark-used':
+                            if ($method === 'POST' && count($segments) >= 5) {
+                                $media_id = $segments[4];
+                                $controller->markAsUsed($media_id);
+                            } else {
+                                http_response_code(400);
+                                echo json_encode(['success' => false, 'message' => 'Media ID required']);
                             }
                             break;
                             
@@ -154,37 +175,8 @@ try {
                 echo json_encode(['success' => false, 'message' => 'API endpoint not found']);
         }
     }
-    // Serve static files
-    else if (count($segments) >= 2 && $segments[0] === 'uploads') {
-        $upload_type = $segments[1];
-        $filename = $segments[2] ?? '';
-        
-        if (empty($filename)) {
-            http_response_code(404);
-            echo json_encode(['success' => false, 'message' => 'File not found']);
-            exit;
-        }
-        
-        $file_path = __DIR__ . '/uploads/' . $upload_type . '/' . $filename;
-        
-        if (file_exists($file_path)) {
-            // Get MIME type
-            $finfo = finfo_open(FILEINFO_MIME_TYPE);
-            $mime_type = finfo_file($finfo, $file_path);
-            finfo_close($finfo);
-            
-            // Set appropriate headers
-            header('Content-Type: ' . $mime_type);
-            header('Content-Length: ' . filesize($file_path));
-            header('Cache-Control: public, max-age=31536000'); // 1 year cache
-            
-            // Output file
-            readfile($file_path);
-        } else {
-            http_response_code(404);
-            echo json_encode(['success' => false, 'message' => 'File not found']);
-        }
-    }
+    // Direct file access disabled for security
+    // All media access now goes through API Gateway -> serve endpoints
     else {
         http_response_code(404);
         echo json_encode(['success' => false, 'message' => 'Route not found']);

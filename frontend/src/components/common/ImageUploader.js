@@ -6,7 +6,8 @@ import { toast } from 'react-toastify';
 const ImageUploader = ({ 
   onUpload, 
   onRemove, 
-  currentImage = null, 
+  currentImage = null,
+  currentMediaId = null, // New prop for existing media ID
   accept = "image/*", 
   maxSize = 5 * 1024 * 1024, // 5MB
   uploadType = 'product',
@@ -14,7 +15,9 @@ const ImageUploader = ({
 }) => {
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
-  const [preview, setPreview] = useState(currentImage);
+  const [preview, setPreview] = useState(
+    currentMediaId ? `http://localhost:8000/media/${currentMediaId}` : currentImage
+  );
   const [error, setError] = useState('');
   const fileInputRef = useRef(null);
 
@@ -53,7 +56,7 @@ const ImageUploader = ({
       formData.append('file', file);
       formData.append('type', uploadType);
 
-      const response = await axios.post('http://localhost:3003/api/v1/media/upload', formData, {
+      const response = await axios.post('http://localhost:8000/api/media/media/upload', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -66,17 +69,19 @@ const ImageUploader = ({
       if (response.data.success) {
         const uploadedFile = response.data.data;
         
-        // Call parent callback with uploaded file info
+        // Call parent callback with media ID (secure architecture)
         if (onUpload) {
           onUpload({
-            id: uploadedFile.id,
-            url: uploadedFile.access_url,
-            thumbnailUrl: uploadedFile.thumbnail_url,
+            media_id: uploadedFile.id,
             originalFilename: uploadedFile.original_filename,
             fileSize: uploadedFile.file_size,
-            contentType: uploadedFile.content_type
+            contentType: uploadedFile.content_type,
+            hasThumb: uploadedFile.has_thumbnail
           });
         }
+
+        // Update preview to use API Gateway secure URL
+        setPreview(`http://localhost:8000/media/${uploadedFile.id}`);
 
         toast.success('Image uploaded successfully!');
       } else {

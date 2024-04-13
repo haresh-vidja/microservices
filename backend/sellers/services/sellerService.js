@@ -10,6 +10,27 @@ const jwt = require('jsonwebtoken');
 const config = require('../config');
 const logger = require('../utils/logger');
 
+// Utility function to mark media as used
+const markMediaAsUsed = async (mediaId) => {
+  if (!mediaId) return;
+  
+  const axios = require('axios');
+  const MEDIA_SERVICE_URL = process.env.MEDIA_SERVICE_URL || 'http://localhost:3003';
+  
+  try {
+    await axios.post(`${MEDIA_SERVICE_URL}/api/v1/media/mark-used/${mediaId}`, {}, {
+      headers: {
+        'X-Service-Key': process.env.MEDIA_SERVICE_KEY || 'seller-secret-key-2024'
+      },
+      timeout: 5000
+    });
+    logger.info(`Media ${mediaId} marked as used`);
+  } catch (error) {
+    logger.error(`Failed to mark media ${mediaId} as used:`, error.message);
+    // Don't throw error - seller operation should still succeed
+  }
+};
+
 class SellerService {
   /**
    * Initialize default roles on startup
@@ -359,6 +380,20 @@ class SellerService {
       } else {
         // Get existing business profile
         business = await Business.findOne({ sellerId });
+      }
+
+      // Mark media files as used after successful profile update
+      if (updateData.profileImage) {
+        markMediaAsUsed(updateData.profileImage); // Don't await - run async
+      }
+
+      // Mark business document media as used
+      if (updateData.businessDocuments && Array.isArray(updateData.businessDocuments)) {
+        updateData.businessDocuments.forEach(doc => {
+          if (doc.media_id) {
+            markMediaAsUsed(doc.media_id); // Don't await - run async
+          }
+        });
       }
 
       logger.info(`Seller profile updated: ${seller.email}`);

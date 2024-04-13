@@ -61,19 +61,14 @@ class MediaController {
             $file_id = $this->media_file->create();
 
             if ($file_id) {
+                // Only return ID for security - no direct file paths
                 $response_data = [
                     'id' => $file_id,
-                    'file_type' => $this->file_handler->getFileTypeCategory($file_data['content_type']),
                     'original_filename' => $file_data['original_filename'],
                     'file_size' => $file_data['file_size'],
                     'content_type' => $file_data['content_type'],
-                    'access_url' => $file_data['access_url']
+                    'has_thumbnail' => !empty($file_data['thumbnail_url'])
                 ];
-
-                // Add thumbnail URL if available
-                if ($file_data['thumbnail_url']) {
-                    $response_data['thumbnail_url'] = $file_data['thumbnail_url'];
-                }
 
                 $this->sendResponse(201, true, 'File uploaded successfully', $response_data);
             } else {
@@ -88,9 +83,141 @@ class MediaController {
     }
 
     /**
-     * Mark files as used
+     * Serve media file securely by ID
      */
-    public function markAsUsed() {
+    public function serveMedia($media_id) {
+        try {
+            if (!$this->isValidUUID($media_id)) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'message' => 'Invalid media ID format']);
+                return;
+            }
+
+            if (!$this->media_file->getById($media_id)) {
+                http_response_code(404);
+                echo json_encode(['success' => false, 'message' => 'Media not found']);
+                return;
+            }
+
+            $file_path = dirname(__DIR__) . '/uploads/' . $this->media_file->upload_type . '/' . $this->media_file->stored_filename;
+            
+            if (!file_exists($file_path)) {
+                http_response_code(404);
+                echo json_encode(['success' => false, 'message' => 'File not found on disk']);
+                return;
+            }
+
+            // Get MIME type
+            $finfo = finfo_open(FILEINFO_MIME_TYPE);
+            $mime_type = finfo_file($finfo, $file_path);
+            finfo_close($finfo);
+
+            // Set headers for secure serving
+            header('Content-Type: ' . $mime_type);
+            header('Content-Length: ' . filesize($file_path));
+            header('Cache-Control: public, max-age=86400'); // 1 day cache
+            header('Content-Disposition: inline; filename="' . $this->media_file->original_filename . '"');
+            
+            // Security headers
+            header('X-Content-Type-Options: nosniff');
+            header('X-Frame-Options: DENY');
+            
+            // Stream file
+            readfile($file_path);
+            exit;
+
+        } catch (Exception $e) {
+            http_response_code(500);
+            echo json_encode(['success' => false, 'message' => 'Error serving file: ' . $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Serve media thumbnail securely by ID
+     */
+    public function serveMediaThumb($media_id) {
+        try {
+            if (!$this->isValidUUID($media_id)) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'message' => 'Invalid media ID format']);
+                return;
+            }
+
+            if (!$this->media_file->getById($media_id)) {
+                http_response_code(404);
+                echo json_encode(['success' => false, 'message' => 'Media not found']);
+                return;
+            }
+
+            // If no thumbnail, serve original (for non-image files)
+            $thumb_path = null;
+            if ($this->media_file->thumbnail_url) {
+                $thumb_path = dirname(__DIR__) . '/uploads/thumbnails/' . basename($this->media_file->thumbnail_url);
+            }
+
+            // Fallback to original if thumbnail doesn't exist
+            if (!$thumb_path || !file_exists($thumb_path)) {
+                $thumb_path = dirname(__DIR__) . '/uploads/' . $this->media_file->upload_type . '/' . $this->media_file->stored_filename;
+            }
+
+            if (!file_exists($thumb_path)) {
+                http_response_code(404);
+                echo json_encode(['success' => false, 'message' => 'Thumbnail not found']);
+                return;
+            }
+
+            // Get MIME type
+            $finfo = finfo_open(FILEINFO_MIME_TYPE);
+            $mime_type = finfo_file($finfo, $thumb_path);
+            finfo_close($finfo);
+
+            // Set headers
+            header('Content-Type: ' . $mime_type);
+            header('Content-Length: ' . filesize($thumb_path));
+            header('Cache-Control: public, max-age=86400'); // 1 day cache
+            header('Content-Disposition: inline; filename="thumb_' . $this->media_file->original_filename . '"');
+            
+            // Security headers
+            header('X-Content-Type-Options: nosniff');
+            header('X-Frame-Options: DENY');
+            
+            // Stream file
+            readfile($thumb_path);
+            exit;
+
+        } catch (Exception $e) {
+            http_response_code(500);
+            echo json_encode(['success' => false, 'message' => 'Error serving thumbnail: ' . $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Mark single file as used (for service-to-service communication)
+     */
+    public function markAsUsed($media_id) {
+        try {
+            if (!$this->isValidUUID($media_id)) {
+                $this->sendResponse(400, false, 'Invalid media ID format');
+                return;
+            }
+
+            $success = $this->media_file->updateUsedStatus($media_id, 1);
+            
+            if ($success) {
+                $this->sendResponse(200, true, 'Media marked as used', ['media_id' => $media_id]);
+            } else {
+                $this->sendResponse(404, false, 'Media not found or failed to update');
+            }
+
+        } catch (Exception $e) {
+            $this->sendResponse(500, false, $e->getMessage());
+        }
+    }
+
+    /**
+     * Mark files as used (bulk)
+     */
+    public function markAsUsedBulk() {
         try {
             $input = json_decode(file_get_contents('php://input'), true);
             

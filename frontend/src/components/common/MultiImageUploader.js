@@ -65,7 +65,7 @@ const MultiImageUploader = ({
           <Col md="6" lg="4" key={index} className="mb-3">
             <div className="position-relative">
               <ImageUploader
-                currentImage={image?.url}
+                currentMediaId={image?.media_id}
                 onUpload={(imageData) => handleImageUpload(index, imageData)}
                 onRemove={() => handleImageRemove(index)}
                 uploadType="product"

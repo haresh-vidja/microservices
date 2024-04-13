@@ -140,12 +140,12 @@ class ServiceClient {
   }
 
   /**
-   * Check product inventory
+   * Check product inventory availability
    */
   async checkInventory(items) {
     try {
       const client = this.createClient(config.services.products);
-      const response = await client.post('/api/v1/service/products/inventory-check', {
+      const response = await client.post('/api/v1/service/inventory/check-availability', {
         items
       });
       
@@ -156,6 +156,83 @@ class ServiceClient {
       }
     } catch (error) {
       logger.error('Error checking inventory:', error);
+      if (error.response) {
+        throw new Error(`Products service error: ${error.response.data.message || error.message}`);
+      }
+      throw new Error('Products service unavailable');
+    }
+  }
+
+  /**
+   * Reserve inventory for order
+   */
+  async reserveInventory(orderId, customerId, items, expirationMinutes = 30) {
+    try {
+      const client = this.createClient(config.services.products);
+      const response = await client.post('/api/v1/service/inventory/reserve', {
+        orderId,
+        customerId,
+        items,
+        expirationMinutes
+      });
+      
+      if (response.data.success) {
+        return response.data.data;
+      } else {
+        throw new Error(response.data.message || 'Failed to reserve inventory');
+      }
+    } catch (error) {
+      logger.error('Error reserving inventory:', error);
+      if (error.response) {
+        throw new Error(`Products service error: ${error.response.data.message || error.message}`);
+      }
+      throw new Error('Products service unavailable');
+    }
+  }
+
+  /**
+   * Confirm inventory reservation (convert to sales)
+   */
+  async confirmInventory(orderId, items) {
+    try {
+      const client = this.createClient(config.services.products);
+      const response = await client.post('/api/v1/service/inventory/confirm', {
+        orderId,
+        items
+      });
+      
+      if (response.data.success) {
+        return response.data.data;
+      } else {
+        throw new Error(response.data.message || 'Failed to confirm inventory');
+      }
+    } catch (error) {
+      logger.error('Error confirming inventory:', error);
+      if (error.response) {
+        throw new Error(`Products service error: ${error.response.data.message || error.message}`);
+      }
+      throw new Error('Products service unavailable');
+    }
+  }
+
+  /**
+   * Release inventory reservation (cancel order)
+   */
+  async releaseInventory(orderId, reason = 'Order cancelled') {
+    try {
+      const client = this.createClient(config.services.products);
+      const response = await client.post('/api/v1/service/inventory/release', {
+        orderId,
+        reason
+      });
+      
+      if (response.data.success) {
+        return response.data.data;
+      } else {
+        throw new Error(response.data.message || 'Failed to release inventory');
+      }
+    } catch (error) {
+      logger.error('Error releasing inventory:', error);
       if (error.response) {
         throw new Error(`Products service error: ${error.response.data.message || error.message}`);
       }

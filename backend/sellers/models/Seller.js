@@ -97,7 +97,13 @@ const sellerSchema = new mongoose.Schema({
   
   // Profile Information
   profileImage: {
-    type: String
+    type: String,
+    validate: {
+      validator: function(v) {
+        return !v || /^[a-f\d]{8}(-[a-f\d]{4}){4}[a-f\d]{8}$/i.test(v);
+      },
+      message: 'Invalid media ID format for profile image'
+    }
   },
   dateOfBirth: {
     type: Date
@@ -127,7 +133,16 @@ const sellerSchema = new mongoose.Schema({
       type: String,
       enum: ['tax_id', 'business_license', 'bank_statement', 'other']
     },
-    url: String,
+    media_id: {
+      type: String,
+      required: true,
+      validate: {
+        validator: function(v) {
+          return /^[a-f\d]{8}(-[a-f\d]{4}){4}[a-f\d]{8}$/i.test(v);
+        },
+        message: 'Invalid media ID format'
+      }
+    },
     verified: {
       type: Boolean,
       default: false

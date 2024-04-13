@@ -59,7 +59,7 @@ const AddProduct = () => {
     setError('');
 
     // Validation
-    if (!mainImage) {
+    if (!mainImage || !mainImage.media_id) {
       setError('Please upload a main product image');
       setLoading(false);
       return;
@@ -74,27 +74,22 @@ const AddProduct = () => {
         return;
       }
 
-      // Prepare images array for the API (URL-based)
+      // Prepare images array for the API (media_id-based)
       const images = [];
-      const allImageIds = [];
       
-      if (mainImage) {
+      if (mainImage && mainImage.media_id) {
         images.push({
-          url: mainImage.url,
+          media_id: mainImage.media_id,
           isPrimary: true
         });
-        allImageIds.push(mainImage.id);
       }
       
       otherImages.forEach(image => {
-        if (image && image.url) {
+        if (image && image.media_id) {
           images.push({
-            url: image.url,
+            media_id: image.media_id,
             isPrimary: false
           });
-          if (image.id) {
-            allImageIds.push(image.id);
-          }
         }
       });
 
@@ -122,6 +117,7 @@ const AddProduct = () => {
 
       if (response.data.success) {
         // Mark images as used in media service
+        const allImageIds = images.map(img => img.media_id);
         if (allImageIds.length > 0) {
           try {
             await axios.post('http://localhost:3003/api/v1/media/mark-used', {

@@ -83,6 +83,81 @@ app.get('/health', (req, res) => {
   });
 });
 
+// Secure media access routes
+app.get('/media/:media_id', async (req, res) => {
+  const axios = require('axios');
+  const { media_id } = req.params;
+  
+  try {
+    const response = await axios({
+      method: 'GET',
+      url: `${services.media.target}/api/v1/media/serve/${media_id}`,
+      responseType: 'stream',
+      timeout: 10000
+    });
+
+    // Forward headers from media service
+    res.set(response.headers);
+    
+    // Stream the media file
+    response.data.pipe(res);
+    
+  } catch (error) {
+    console.error(`Media serving error for ID ${media_id}:`, error.message);
+    
+    if (error.response) {
+      res.status(error.response.status).json({
+        success: false,
+        message: error.response.data?.message || 'Media not found',
+        media_id: media_id
+      });
+    } else {
+      res.status(502).json({
+        success: false,
+        message: 'Media service unavailable',
+        media_id: media_id
+      });
+    }
+  }
+});
+
+app.get('/thumb/:media_id', async (req, res) => {
+  const axios = require('axios');
+  const { media_id } = req.params;
+  
+  try {
+    const response = await axios({
+      method: 'GET',
+      url: `${services.media.target}/api/v1/media/serve-thumb/${media_id}`,
+      responseType: 'stream',
+      timeout: 10000
+    });
+
+    // Forward headers from media service
+    res.set(response.headers);
+    
+    // Stream the thumbnail
+    response.data.pipe(res);
+    
+  } catch (error) {
+    console.error(`Thumbnail serving error for ID ${media_id}:`, error.message);
+    
+    if (error.response) {
+      res.status(error.response.status).json({
+        success: false,
+        message: error.response.data?.message || 'Thumbnail not found',
+        media_id: media_id
+      });
+    } else {
+      res.status(502).json({
+        success: false,
+        message: 'Media service unavailable',
+        media_id: media_id
+      });
+    }
+  }
+});
+
 // Service status endpoint
 app.get('/api/status', async (req, res) => {
   const axios = require('axios');
