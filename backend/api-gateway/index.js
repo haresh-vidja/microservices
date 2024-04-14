@@ -9,6 +9,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const compression = require('compression');
 const rateLimit = require('express-rate-limit');
+const axios = require('axios');
 require('dotenv').config();
 
 const app = express();
@@ -23,7 +24,13 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Service-Key', 'X-Requested-With']
 }));
 app.use(compression());
-app.use(express.json({ limit: '10mb' }));
+// Only parse JSON for non-multipart requests
+app.use((req, res, next) => {
+  if (req.headers['content-type'] && req.headers['content-type'].includes('multipart/form-data')) {
+    return next();
+  }
+  express.json({ limit: '10mb' })(req, res, next);
+});
 
 // Rate limiting
 const limiter = rateLimit({
@@ -85,7 +92,6 @@ app.get('/health', (req, res) => {
 
 // Secure media access routes
 app.get('/media/:media_id', async (req, res) => {
-  const axios = require('axios');
   const { media_id } = req.params;
   
   try {
@@ -122,10 +128,10 @@ app.get('/media/:media_id', async (req, res) => {
 });
 
 app.get('/thumb/:media_id', async (req, res) => {
-  const axios = require('axios');
   const { media_id } = req.params;
   
   try {
+    console.log(`Requesting thumbnail for media ID: ${media_id}`);
     const response = await axios({
       method: 'GET',
       url: `${services.media.target}/api/v1/media/serve-thumb/${media_id}`,
@@ -133,8 +139,22 @@ app.get('/thumb/:media_id', async (req, res) => {
       timeout: 10000
     });
 
+    console.log(`Thumbnail response received for ${media_id}, headers:`, Object.keys(response.headers));
+    
     // Forward headers from media service
     res.set(response.headers);
+    
+    // Handle stream errors
+    response.data.on('error', (streamError) => {
+      console.error(`Stream error for thumbnail ${media_id}:`, streamError);
+      if (!res.headersSent) {
+        res.status(500).json({
+          success: false,
+          message: 'Error streaming thumbnail',
+          media_id: media_id
+        });
+      }
+    });
     
     // Stream the thumbnail
     response.data.pipe(res);
@@ -160,7 +180,6 @@ app.get('/thumb/:media_id', async (req, res) => {
 
 // Service status endpoint
 app.get('/api/status', async (req, res) => {
-  const axios = require('axios');
   const serviceStatus = {};
   
   for (const [name, config] of Object.entries(services)) {
@@ -216,13 +235,17 @@ Object.entries(services).forEach(([serviceName, config]) => {
         console.log(`[${new Date().toISOString()}] ${req.method} ${req.url} -> ${config.target}${proxyReq.path}`);
       }
       
-      // Fix for POST/PUT requests with body
-      if (req.body && (req.method === 'POST' || req.method === 'PUT' || req.method === 'PATCH')) {
+      // Only handle JSON body for non-multipart requests
+      if (req.body && 
+          (req.method === 'POST' || req.method === 'PUT' || req.method === 'PATCH') &&
+          req.headers['content-type'] && 
+          !req.headers['content-type'].includes('multipart/form-data')) {
         const bodyData = JSON.stringify(req.body);
         proxyReq.setHeader('Content-Type', 'application/json');
         proxyReq.setHeader('Content-Length', Buffer.byteLength(bodyData));
         proxyReq.write(bodyData);
       }
+      // For multipart/form-data, let the proxy handle it natively
     },
     
     // Handle proxy response

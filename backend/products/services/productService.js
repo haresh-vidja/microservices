@@ -78,13 +78,18 @@ class ProductService {
    * Create new product
    */
   async createProduct(productData) {
-    // Validate media files if provided
+    // Validate media files if provided (only validate media_id based images)
     if (productData.images && productData.images.length > 0) {
-      const mediaIds = productData.images.map(img => img.media_id);
-      const validation = await mediaClient.validateMediaFiles(mediaIds);
+      const mediaIds = productData.images
+        .filter(img => img.media_id)
+        .map(img => img.media_id);
       
-      if (validation.invalid.length > 0) {
-        throw new Error(`Invalid media files: ${validation.invalid.map(i => i.id).join(', ')}`);
+      if (mediaIds.length > 0) {
+        const validation = await mediaClient.validateMediaFiles(mediaIds);
+        
+        if (validation.invalid.length > 0) {
+          throw new Error(`Invalid media files: ${validation.invalid.map(i => i.id).join(', ')}`);
+        }
       }
     }
     
@@ -93,8 +98,13 @@ class ProductService {
     
     // Mark media files as used after successful product creation
     if (product.images && product.images.length > 0) {
-      const mediaIds = product.images.map(img => img.media_id);
-      mediaClient.markMultipleAsUsed(mediaIds); // Don't await - run async
+      const mediaIds = product.images
+        .filter(img => img.media_id)
+        .map(img => img.media_id);
+      
+      if (mediaIds.length > 0) {
+        mediaClient.markMultipleAsUsed(mediaIds); // Don't await - run async
+      }
     }
     
     return product;
@@ -109,13 +119,18 @@ class ProductService {
       throw new Error('Product not found');
     }
     
-    // Validate media files if being updated
+    // Validate media files if being updated (only validate media_id based images)
     if (updateData.images && updateData.images.length > 0) {
-      const mediaIds = updateData.images.map(img => img.media_id);
-      const validation = await mediaClient.validateMediaFiles(mediaIds);
+      const mediaIds = updateData.images
+        .filter(img => img.media_id)
+        .map(img => img.media_id);
       
-      if (validation.invalid.length > 0) {
-        throw new Error(`Invalid media files: ${validation.invalid.map(i => i.id).join(', ')}`);
+      if (mediaIds.length > 0) {
+        const validation = await mediaClient.validateMediaFiles(mediaIds);
+        
+        if (validation.invalid.length > 0) {
+          throw new Error(`Invalid media files: ${validation.invalid.map(i => i.id).join(', ')}`);
+        }
       }
     }
     
@@ -149,8 +164,13 @@ class ProductService {
     
     // Mark new media files as used if images were updated
     if (updateData.images) {
-      const mediaIds = updateData.images.map(img => img.media_id);
-      mediaClient.markMultipleAsUsed(mediaIds); // Don't await - run async
+      const mediaIds = updateData.images
+        .filter(img => img.media_id)
+        .map(img => img.media_id);
+      
+      if (mediaIds.length > 0) {
+        mediaClient.markMultipleAsUsed(mediaIds); // Don't await - run async
+      }
     }
     
     return updatedProduct;

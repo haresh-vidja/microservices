@@ -426,8 +426,7 @@ class MediaController {
                     continue;
                 }
 
-                $file = $this->mediaFile->getById($file_id);
-                if (!$file) {
+                if (!$this->media_file->getById($file_id)) {
                     $results[] = [
                         'id' => $file_id,
                         'valid' => false,
@@ -438,21 +437,21 @@ class MediaController {
                 }
 
                 // Check if file physically exists
-                $file_path = $this->upload_dir . $file['filename'];
+                $file_path = dirname(__DIR__) . '/uploads/' . $this->media_file->upload_type . '/' . $this->media_file->stored_filename;
                 $file_exists = file_exists($file_path);
 
                 $results[] = [
                     'id' => $file_id,
                     'valid' => $file_exists,
                     'exists' => true,
-                    'filename' => $file['filename'],
-                    'original_name' => $file['original_name'],
-                    'file_size' => $file['file_size'],
-                    'file_type' => $file['file_type'],
-                    'url' => $file['url'],
-                    'thumbnail_url' => $file['thumbnail_url'],
-                    'is_used' => $file['is_used'],
-                    'uploaded_at' => $file['uploaded_at']
+                    'filename' => $this->media_file->stored_filename,
+                    'original_name' => $this->media_file->original_filename,
+                    'file_size' => $this->media_file->file_size,
+                    'file_type' => $this->media_file->content_type,
+                    'url' => $this->media_file->access_url,
+                    'thumbnail_url' => $this->media_file->thumbnail_url,
+                    'is_used' => $this->media_file->is_used,
+                    'uploaded_at' => $this->media_file->uploaded_at
                 ];
             }
 
@@ -512,7 +511,7 @@ class MediaController {
                     continue;
                 }
 
-                $success = $this->mediaFile->markAsUsed($file_id);
+                $success = $this->media_file->updateUsedStatus($file_id, 1);
                 $results[] = [
                     'id' => $file_id,
                     'success' => $success,
@@ -593,6 +592,9 @@ class MediaController {
      * Validate UUID format
      */
     private function isValidUUID($uuid) {
+        if ($uuid === null || $uuid === '') {
+            return false;
+        }
         return preg_match('/^[a-f\d]{8}(-[a-f\d]{4}){4}[a-f\d]{8}$/i', $uuid);
     }
 

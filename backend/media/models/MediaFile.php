@@ -92,9 +92,8 @@ class MediaFile {
         $stmt->bindParam(":id", $id);
         $stmt->execute();
 
-        if($stmt->rowCount() > 0) {
-            $row = $stmt->fetch(PDO::FETCH_ASSOC);
-            
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        if($row) {
             $this->id = $row['id'];
             $this->original_filename = $row['original_filename'];
             $this->stored_filename = $row['stored_filename'];

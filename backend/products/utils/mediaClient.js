@@ -73,8 +73,17 @@ class MediaClient {
         fileIds: mediaIds
       });
       
-      if (response.data.success) {
-        return response.data.data;
+      if (response.data.success && response.data.data) {
+        // Transform the response to the expected format
+        const files = response.data.data.files || [];
+        const valid = files.filter(f => f.valid);
+        const invalid = files.filter(f => !f.valid);
+        
+        return {
+          valid: valid,
+          invalid: invalid,
+          summary: response.data.data.summary
+        };
       } else {
         throw new Error(response.data.message || 'Failed to validate media files');
       }

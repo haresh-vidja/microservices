@@ -34,15 +34,17 @@ const productSchema = new mongoose.Schema({
   images: [{
     media_id: {
       type: String,
-      required: true,
+      required: false, // Made optional to handle legacy data
       validate: {
         validator: function(v) {
-          return /^[a-f\d]{8}(-[a-f\d]{4}){4}[a-f\d]{8}$/i.test(v);
+          // Only validate format if media_id is provided
+          return !v || /^[a-f\d]{8}(-[a-f\d]{4}){4}[a-f\d]{8}$/i.test(v);
         },
         message: 'Invalid media ID format'
       }
     },
-    isPrimary: { type: Boolean, default: false }
+    isPrimary: { type: Boolean, default: false },
+    url: { type: String } // Support for legacy URL format
   }],
   stock: {
     type: Number,
