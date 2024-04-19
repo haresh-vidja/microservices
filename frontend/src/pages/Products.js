@@ -44,7 +44,7 @@ const Products = () => {
 
   const addToCart = (product) => {
     const cartItems = JSON.parse(localStorage.getItem('cartItems') || '[]');
-    const existingItem = cartItems.find(item => item._id === product._id);
+    const existingItem = cartItems.find(item => item.id === product.id);
     
     if (existingItem) {
       existingItem.quantity += 1;
@@ -140,7 +140,7 @@ const Products = () => {
         <>
           <Row>
             {products.map(product => (
-              <Col md="4" lg="3" key={product._id} className="mb-4">
+              <Col md="4" lg="3" key={product.id} className="mb-4">
                 <Card className="product-card h-100">
                   {product.images && product.images[0] && (
                     <CardImg 
@@ -168,7 +168,7 @@ const Products = () => {
                         size="sm" 
                         block
                         tag={Link} 
-                        to={`/product/${product._id}`}
+                        to={`/product/${product.id}`}
                         className="mb-2"
                       >
                         View Details

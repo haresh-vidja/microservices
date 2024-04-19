@@ -122,7 +122,7 @@ const MultiImageUploader = ({
         </small>
       </div>
 
-      <style jsx>{`
+      <style jsx="true">{`
         .multi-image-uploader .image-controls {
           font-size: 0.875rem;
         }

@@ -40,7 +40,7 @@ const ProductDetail = () => {
     if (!product) return;
     
     const cartItems = JSON.parse(localStorage.getItem('cartItems') || '[]');
-    const existingItem = cartItems.find(item => item._id === product._id);
+    const existingItem = cartItems.find(item => item.id === product.id);
     
     if (existingItem) {
       existingItem.quantity += quantity;

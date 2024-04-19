@@ -208,7 +208,7 @@ const ImageUploader = ({
         )}
       </div>
 
-      <style jsx>{`
+      <style jsx="true">{`
         .image-uploader .upload-area {
           position: relative;
         }

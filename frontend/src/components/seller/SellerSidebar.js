@@ -1,10 +1,47 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Nav, NavItem, NavLink, Badge } from 'reactstrap';
 import { useLocation, Link } from 'react-router-dom';
+import axios from 'axios';
 import './SellerSidebar.css';
 
-const SellerSidebar = ({ isOpen }) => {
+const SellerSidebar = ({ isOpen, refreshTrigger }) => {
   const location = useLocation();
+  const [productCount, setProductCount] = useState(0);
+  const [orderCount, setOrderCount] = useState(0);
+
+  useEffect(() => {
+    fetchCounts();
+  }, [refreshTrigger]);
+
+  // Also refresh counts when location changes (user navigates)
+  useEffect(() => {
+    fetchCounts();
+  }, [location.pathname]);
+
+  const fetchCounts = async () => {
+    try {
+      const token = localStorage.getItem('sellerToken');
+      const sellerData = JSON.parse(localStorage.getItem('sellerData') || '{}');
+      
+      console.log('Sidebar: sellerData:', sellerData);
+      console.log('Sidebar: expected alex.tech sellerId should be: 6895fc2fc8976794b14a5fce');
+      
+      if (!token || !sellerData.id) {
+        return;
+      }
+
+      // Fetch products count
+      const productsResponse = await axios.get(`/api/products/products/seller/${sellerData.id}?status=active&limit=1`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (productsResponse.data.success) {
+        setProductCount(productsResponse.data.data.summary.active || 0);
+      }
+    } catch (error) {
+      console.error('Error fetching sidebar counts:', error);
+    }
+  };
 
   const menuItems = [
     {
@@ -17,7 +54,7 @@ const SellerSidebar = ({ isOpen }) => {
       path: '/seller/products',
       name: 'Products',
       icon: '📦',
-      badge: { text: '12', color: 'primary' }
+      badge: productCount > 0 ? { text: productCount.toString(), color: 'primary' } : null
     },
     {
       path: '/seller/add-product',
@@ -29,7 +66,7 @@ const SellerSidebar = ({ isOpen }) => {
       path: '/seller/orders',
       name: 'Orders',
       icon: '📋',
-      badge: { text: '3', color: 'danger' }
+      badge: orderCount > 0 ? { text: orderCount.toString(), color: 'danger' } : null
     },
     {
       path: '/seller/profile',

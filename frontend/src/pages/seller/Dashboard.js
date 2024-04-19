@@ -32,22 +32,71 @@ const SellerDashboard = () => {
       const token = localStorage.getItem('sellerToken');
       const headers = { Authorization: `Bearer ${token}` };
       
+      const sellerData = JSON.parse(localStorage.getItem('sellerData')) || {};
+      let sellerId = sellerData.id;
+      
+      // Fallback: extract seller ID from JWT token if not in localStorage
+      if (!sellerId && token) {
+        try {
+          const tokenPayload = JSON.parse(atob(token.split('.')[1]));
+          sellerId = tokenPayload.id;
+          console.log('Dashboard: Extracted seller ID from JWT token:', sellerId);
+        } catch (e) {
+          console.error('Dashboard: Failed to extract seller ID from token:', e);
+        }
+      }
+      
+      // Debug: Always extract and log JWT token info for comparison
+      if (token) {
+        try {
+          const tokenPayload = JSON.parse(atob(token.split('.')[1]));
+          console.log('Dashboard: JWT token payload:', tokenPayload);
+          console.log('Dashboard: JWT seller ID:', tokenPayload.id);
+          console.log('Dashboard: localStorage seller ID:', sellerData.id);
+        } catch (e) {
+          console.error('Dashboard: Failed to parse JWT token for debugging:', e);
+        }
+      }
+      
+      console.log('Dashboard: sellerData:', sellerData);
+      console.log('Dashboard: sellerId:', sellerId);
+      console.log('Dashboard: expected alex.tech sellerId should be: 6895fc2fc8976794b14a5fce');
+      
+      if (!sellerId) {
+        console.error('Dashboard: No seller ID found in localStorage or token');
+        setProducts([]);
+        setStats(prev => ({ ...prev, totalProducts: 0 }));
+        setLoading(false);
+        return;
+      }
+      
+      const productsUrl = `/api/products/products/seller/${sellerId}?limit=10&status=active`;
+      console.log('Dashboard: Fetching products from:', productsUrl);
+      
       const [sellerRes, productsRes, ordersRes] = await Promise.all([
         axios.get('http://localhost:3002/api/v1/sellers/profile', { headers }),
-        axios.get('/api/products/products?sellerId=' + JSON.parse(localStorage.getItem('sellerData'))?.id, { headers }),
-        axios.get('/api/orders?sellerId=' + JSON.parse(localStorage.getItem('sellerData'))?.id, { headers })
+        axios.get(productsUrl, { headers }),
+        axios.get('/api/orders?sellerId=' + sellerId, { headers })
       ]);
 
       if (sellerRes.data.success) {
         setSeller(sellerRes.data.data);
       }
 
+      console.log('Dashboard: Products API response:', productsRes.data);
+      
       if (productsRes.data.success) {
-        setProducts(productsRes.data.data.products || []);
+        const products = productsRes.data.data.products || [];
+        console.log('Dashboard: Products fetched successfully:', products.length, 'products');
+        console.log('Dashboard: Product details:', products.map(p => ({ id: p.id, name: p.name, isActive: p.isActive })));
+        setProducts(products);
         setStats(prev => ({
           ...prev,
-          totalProducts: (productsRes.data.data.products || []).length
+          totalProducts: productsRes.data.data.summary?.total || products.length
         }));
+      } else {
+        console.error('Dashboard: Failed to fetch products:', productsRes.data);
+        setProducts([]);
       }
 
       if (ordersRes.data.success) {
@@ -146,34 +195,53 @@ const SellerDashboard = () => {
           <Card>
             <CardBody>
               <div className="d-flex justify-content-between align-items-center mb-3">
-                <h5>Recent Products</h5>
-                <Button color="primary" size="sm" tag={Link} to="/seller/add-product">
-                  Add Product
-                </Button>
+                <h5>Recent Products ({products.length > 0 ? `${products.length} active` : '0'})</h5>
+                <div>
+                  <Button color="outline-primary" size="sm" tag={Link} to="/seller/products" className="mr-2">
+                    View All
+                  </Button>
+                  <Button color="primary" size="sm" tag={Link} to="/seller/add-product">
+                    Add Product
+                  </Button>
+                </div>
               </div>
               {products.length > 0 ? (
                 <Table responsive size="sm">
                   <thead>
                     <tr>
-                      <th>Name</th>
+                      <th>Product Name</th>
                       <th>Price</th>
                       <th>Stock</th>
+                      <th>Status</th>
                       <th>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
                     {products.slice(0, 5).map(product => (
-                      <tr key={product._id}>
-                        <td>{product.name}</td>
-                        <td>${product.price}</td>
-                        <td>{product.stock}</td>
+                      <tr key={product.id}>
+                        <td>
+                          <div>
+                            <strong>{product.name}</strong>
+                            <br />
+                            <small className="text-muted">{product.category}</small>
+                          </div>
+                        </td>
+                        <td><strong>${product.price}</strong></td>
+                        <td>
+                          <Badge color={product.stock <= product.lowStockAlert ? 'warning' : 'success'}>
+                            {product.stock} units
+                          </Badge>
+                        </td>
+                        <td>
+                          <Badge color="success">Active</Badge>
+                        </td>
                         <td>
                           <Button
-                            color="link"
+                            color="primary"
                             size="sm"
                             tag={Link}
-                            to={`/seller/edit-product/${product._id}`}
-                            className="p-0"
+                            to={`/seller/edit-product/${product.id}`}
+                            className="btn-sm"
                           >
                             Edit
                           </Button>
@@ -183,7 +251,12 @@ const SellerDashboard = () => {
                   </tbody>
                 </Table>
               ) : (
-                <p className="text-muted">No products added yet.</p>
+                <div className="text-center py-4">
+                  <p className="text-muted mb-3">No active products found.</p>
+                  <Button color="primary" size="sm" tag={Link} to="/seller/add-product">
+                    Add Your First Product
+                  </Button>
+                </div>
               )}
             </CardBody>
           </Card>

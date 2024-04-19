@@ -117,10 +117,10 @@ const AddProduct = () => {
 
       if (response.data.success) {
         // Mark images as used in media service
-        const allImageIds = images.map(img => img.media_id);
+        const allImageIds = images.map(img => img?.media_id).filter(Boolean);
         if (allImageIds.length > 0) {
           try {
-            await axios.post('http://localhost:3003/api/v1/media/mark-used', {
+            await axios.post('http://localhost:8000/api/media/media/bulk-mark-used', {
               ids: allImageIds
             });
           } catch (mediaError) {
@@ -130,7 +130,7 @@ const AddProduct = () => {
         }
 
         toast.success('Product added successfully!');
-        history.push('/seller/dashboard');
+        history.push('/seller/products');
       }
     } catch (error) {
       const errorMessage = error.response?.data?.message || 'Failed to add product. Please try again.';

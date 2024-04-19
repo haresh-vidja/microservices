@@ -70,12 +70,33 @@ const EditProduct = () => {
 
         // Set images
         if (product.images && product.images.length > 0) {
-          // Create image objects from URLs for existing images
-          const imageObjects = product.images.map((url, index) => ({
-            id: `existing-${index}`,
-            url: url,
-            originalFilename: `image-${index + 1}.jpg`
-          }));
+          // Create image objects from backend image format
+          const imageObjects = product.images.map((image, index) => {
+            // Handle both old format (string URL) and new format (object with media_id)
+            if (typeof image === 'string') {
+              return {
+                id: `existing-${index}`,
+                url: image,
+                originalFilename: `image-${index + 1}.jpg`
+              };
+            } else if (image.media_id) {
+              return {
+                id: `existing-${index}`,
+                media_id: image.media_id,
+                url: `http://localhost:8000/media/${image.media_id}`,
+                originalFilename: `image-${index + 1}.jpg`,
+                isPrimary: image.isPrimary
+              };
+            } else if (image.url) {
+              return {
+                id: `existing-${index}`,
+                url: image.url,
+                originalFilename: `image-${index + 1}.jpg`,
+                isPrimary: image.isPrimary
+              };
+            }
+            return null;
+          }).filter(Boolean);
           
           setMainImage(imageObjects[0]);
           setOriginalMainImageId(imageObjects[0].id);
@@ -140,8 +161,8 @@ const EditProduct = () => {
 
   const handleOtherImagesChange = (newImages) => {
     // Find deleted images by comparing with current otherImages
-    const currentIds = otherImages.map(img => img.id);
-    const newIds = newImages.map(img => img.id);
+    const currentIds = otherImages.map(img => img?.id).filter(Boolean);
+    const newIds = newImages.map(img => img?.id).filter(Boolean);
     
     const deletedIds = currentIds.filter(id => 
       id.startsWith('existing-') && !newIds.includes(id)
@@ -173,28 +194,46 @@ const EditProduct = () => {
         return;
       }
 
-      // Prepare images array for the API (URL-based)
+      // Prepare images array for the API (media_id-based for secure architecture)
       const images = [];
       const allImageIds = [];
       
       if (mainImage) {
-        images.push({
-          url: mainImage.url,
-          isPrimary: true
-        });
-        if (mainImage.id) {
-          allImageIds.push(mainImage.id);
+        // Check if it's a new upload (has media_id) or existing image (has url)
+        if (mainImage.media_id) {
+          images.push({
+            media_id: mainImage.media_id,
+            isPrimary: true
+          });
+          allImageIds.push(mainImage.media_id);
+        } else if (mainImage.url) {
+          images.push({
+            url: mainImage.url,
+            isPrimary: true
+          });
+          if (mainImage.id) {
+            allImageIds.push(mainImage.id);
+          }
         }
       }
       
       otherImages.forEach(image => {
-        if (image && image.url) {
-          images.push({
-            url: image.url,
-            isPrimary: false
-          });
-          if (image.id) {
-            allImageIds.push(image.id);
+        if (image) {
+          // Check if it's a new upload (has media_id) or existing image (has url)
+          if (image.media_id) {
+            images.push({
+              media_id: image.media_id,
+              isPrimary: false
+            });
+            allImageIds.push(image.media_id);
+          } else if (image.url) {
+            images.push({
+              url: image.url,
+              isPrimary: false
+            });
+            if (image.id) {
+              allImageIds.push(image.id);
+            }
           }
         }
       });
@@ -221,12 +260,14 @@ const EditProduct = () => {
       });
 
       if (response.data.success) {
-        // Mark new images as used in media service (only newly uploaded images)
-        const newImageIds = allImageIds.filter(id => !id.startsWith('existing-'));
-        if (newImageIds.length > 0) {
+        // Mark new images as used in media service (only newly uploaded images with media_id)
+        const newMediaIds = allImageIds.filter(id => 
+          id && !id.startsWith('existing-') && id.match(/^[a-f\d]{8}(-[a-f\d]{4}){4}[a-f\d]{8}$/i)
+        );
+        if (newMediaIds.length > 0) {
           try {
-            await axios.post('http://localhost:3003/api/v1/media/mark-used', {
-              ids: newImageIds
+            await axios.post('http://localhost:8000/api/media/media/bulk-mark-used', {
+              ids: newMediaIds
             });
           } catch (mediaError) {
             console.warn('Failed to mark images as used:', mediaError);
@@ -254,7 +295,7 @@ const EditProduct = () => {
         }
 
         toast.success('Product updated successfully!');
-        history.push('/seller/dashboard');
+        history.push('/seller/products');
       }
     } catch (error) {
       const errorMessage = error.response?.data?.message || 'Failed to update product. Please try again.';
@@ -383,6 +424,7 @@ const EditProduct = () => {
                   <Label>Main Product Image *</Label>
                   <ImageUploader
                     currentImage={mainImage?.url}
+                    currentMediaId={mainImage?.media_id}
                     onUpload={setMainImage}
                     onRemove={handleMainImageRemove}
                     uploadType="product"

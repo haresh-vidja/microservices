@@ -16,7 +16,7 @@ const ProductsList = () => {
   const [pagination, setPagination] = useState({});
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterStatus, setFilterStatus] = useState('all');
+  const [filterStatus, setFilterStatus] = useState('active');
   const [filterCategory, setFilterCategory] = useState('all');
   const [sortBy, setSortBy] = useState('createdAt');
   const [sortOrder, setSortOrder] = useState('desc');
@@ -39,6 +39,9 @@ const ProductsList = () => {
   // Analytics data
   const [analytics, setAnalytics] = useState(null);
   const [analyticsLoading, setAnalyticsLoading] = useState(false);
+  
+  // Delete loading state
+  const [deletingProducts, setDeletingProducts] = useState(new Set());
   
   // Dropdown states
   const [actionsDropdown, setActionsDropdown] = useState({});
@@ -134,17 +137,52 @@ const ProductsList = () => {
   };
 
   const handleDelete = async (productId) => {
-    if (window.confirm('Are you sure you want to delete this product? This action cannot be undone.')) {
+    // Prevent multiple delete requests for the same product
+    if (deletingProducts.has(productId)) {
+      return;
+    }
+    
+    if (window.confirm('Are you sure you want to delete this product? It will be moved to inactive status and hidden from the main view.')) {
       try {
         const token = localStorage.getItem('sellerToken');
+        if (!token) {
+          toast.error('Authentication required. Please login again.');
+          return;
+        }
+        
+        // Mark as deleting
+        setDeletingProducts(prev => new Set([...prev, productId]));
+        
         await axios.delete(`/api/products/products/${productId}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
-        toast.success('Product deleted successfully');
+        toast.success('Product deleted successfully (moved to inactive)');
         fetchProducts();
       } catch (error) {
         console.error('Error deleting product:', error);
-        toast.error('Failed to delete product');
+        
+        // More detailed error handling
+        if (error.response) {
+          // Server responded with error status
+          const message = error.response.data?.message || 'Failed to delete product';
+          toast.error(`Delete failed: ${message}`);
+          console.error('Server error:', error.response.status, error.response.data);
+        } else if (error.request) {
+          // Request was made but no response received
+          toast.error('Network error: Unable to connect to server');
+          console.error('Network error:', error.request);
+        } else {
+          // Something else happened
+          toast.error('Unexpected error occurred');
+          console.error('Unexpected error:', error.message);
+        }
+      } finally {
+        // Remove from deleting set
+        setDeletingProducts(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(productId);
+          return newSet;
+        });
       }
     }
   };
@@ -152,7 +190,7 @@ const ProductsList = () => {
   const handleUpdateStock = async () => {
     try {
       const token = localStorage.getItem('sellerToken');
-      await axios.put(`/api/products/products/${selectedProduct._id}/stock`, {
+      await axios.put(`/api/products/products/${selectedProduct.id}/stock`, {
         stock: parseInt(newStock),
         notes: stockNotes
       }, {
@@ -179,7 +217,7 @@ const ProductsList = () => {
   const openHistoryModal = (product) => {
     setSelectedProduct(product);
     setHistoryModal(true);
-    fetchProductHistory(product._id, activeTab);
+    fetchProductHistory(product.id, activeTab);
   };
 
   const openAnalyticsModal = () => {
@@ -391,7 +429,7 @@ const ProductsList = () => {
                 </thead>
                 <tbody>
                   {filteredProducts.map(product => (
-                    <tr key={product._id}>
+                    <tr key={product.id}>
                       <td>
                         {product.images && product.images.length > 0 ? (
                           <SecureImage
@@ -414,7 +452,7 @@ const ProductsList = () => {
                           <br />
                           <Badge color="secondary" className="mr-1">{product.category}</Badge>
                           <br />
-                          <small className="text-muted">ID: {product._id.slice(-8)}</small>
+                          <small className="text-muted">ID: {product.id?.slice(-8)}</small>
                         </div>
                       </td>
                       <td>
@@ -449,14 +487,14 @@ const ProductsList = () => {
                       </td>
                       <td>
                         <Dropdown 
-                          isOpen={actionsDropdown[product._id] || false} 
-                          toggle={() => toggleActionsDropdown(product._id)}
+                          isOpen={actionsDropdown[product.id] || false} 
+                          toggle={() => toggleActionsDropdown(product.id)}
                         >
                           <DropdownToggle caret color="primary" size="sm">
                             Actions
                           </DropdownToggle>
                           <DropdownMenu>
-                            <DropdownItem tag={Link} to={`/seller/edit-product/${product._id}`}>
+                            <DropdownItem tag={Link} to={`/seller/edit-product/${product.id}`}>
                               ✏️ Edit Product
                             </DropdownItem>
                             <DropdownItem onClick={() => openStockModal(product)}>
@@ -466,8 +504,12 @@ const ProductsList = () => {
                               📊 View History
                             </DropdownItem>
                             <DropdownItem divider />
-                            <DropdownItem onClick={() => handleDelete(product._id)} className="text-danger">
-                              🗑️ Delete Product
+                            <DropdownItem 
+                              onClick={() => handleDelete(product.id)} 
+                              className="text-danger"
+                              disabled={deletingProducts.has(product.id)}
+                            >
+                              {deletingProducts.has(product.id) ? '⏳ Deleting...' : '🗑️ Delete Product'}
                             </DropdownItem>
                           </DropdownMenu>
                         </Dropdown>
@@ -592,7 +634,7 @@ const ProductsList = () => {
                 className={activeTab === 'all' ? 'active' : ''}
                 onClick={() => {
                   setActiveTab('all');
-                  if (selectedProduct) fetchProductHistory(selectedProduct._id, 'all');
+                  if (selectedProduct) fetchProductHistory(selectedProduct.id, 'all');
                 }}
                 style={{ cursor: 'pointer' }}
               >
@@ -604,7 +646,7 @@ const ProductsList = () => {
                 className={activeTab === 'sale' ? 'active' : ''}
                 onClick={() => {
                   setActiveTab('sale');
-                  if (selectedProduct) fetchProductHistory(selectedProduct._id, 'sale');
+                  if (selectedProduct) fetchProductHistory(selectedProduct.id, 'sale');
                 }}
                 style={{ cursor: 'pointer' }}
               >
@@ -616,7 +658,7 @@ const ProductsList = () => {
                 className={activeTab === 'stock_add' ? 'active' : ''}
                 onClick={() => {
                   setActiveTab('stock_add');
-                  if (selectedProduct) fetchProductHistory(selectedProduct._id, 'stock_add');
+                  if (selectedProduct) fetchProductHistory(selectedProduct.id, 'stock_add');
                 }}
                 style={{ cursor: 'pointer' }}
               >
@@ -774,7 +816,7 @@ const ProductsList = () => {
                   {analytics.salesByCategory.map((category, index) => (
                     <div key={index} className="mb-3">
                       <div className="d-flex justify-content-between">
-                        <span>{category._id}</span>
+                        <span>{category.id}</span>
                         <span>{category.totalSales} units | {getRevenueDisplay(category.totalRevenue)}</span>
                       </div>
                       <Progress 
