@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, CardImg, CardBody, CardTitle, CardText, Button, Input, FormGroup, Label } from 'reactstrap';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'react-toastify';
+import SecureImage from '../components/common/SecureImage';
 
 const Products = () => {
+  const location = useLocation();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -12,6 +14,20 @@ const Products = () => {
   const [sortBy, setSortBy] = useState('name');
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+
+  useEffect(() => {
+    // Initialize search state from URL parameters
+    const urlParams = new URLSearchParams(location.search);
+    const searchParam = urlParams.get('search');
+    const categoryParam = urlParams.get('category');
+    
+    if (searchParam) {
+      setSearch(searchParam);
+    }
+    if (categoryParam) {
+      setCategory(categoryParam);
+    }
+  }, [location.search]);
 
   useEffect(() => {
     fetchProducts();
@@ -24,6 +40,7 @@ const Products = () => {
         page,
         limit: 12,
         sort: sortBy,
+        status: 'active', // Only show active products
         ...(search && { search }),
         ...(category && { category })
       };
@@ -31,8 +48,8 @@ const Products = () => {
       const response = await axios.get('/api/products/products', { params });
       
       if (response.data.success) {
-        setProducts(response.data.data.products || []);
-        setTotalPages(response.data.data.pagination?.pages || 1);
+        setProducts(response.data.data || []);
+        setTotalPages(response.data.pagination?.pages || 1);
       }
     } catch (error) {
       console.error('Error fetching products:', error);
@@ -142,15 +159,67 @@ const Products = () => {
             {products.map(product => (
               <Col md="4" lg="3" key={product.id} className="mb-4">
                 <Card className="product-card h-100">
-                  {product.images && product.images[0] && (
-                    <CardImg 
-                      top 
-                      width="100%" 
-                      src={product.images[0]} 
-                      alt={product.name}
-                      style={{ height: '200px', objectFit: 'cover' }}
-                    />
-                  )}
+                  <div style={{ height: '200px', position: 'relative', overflow: 'hidden' }}>
+                    {product.images && product.images.length > 0 ? (
+                      product.images[0].media_id ? (
+                        <SecureImage 
+                          mediaId={product.images[0].media_id}
+                          alt={product.name}
+                          style={{ 
+                            width: '100%', 
+                            height: '100%', 
+                            objectFit: 'cover',
+                            position: 'absolute',
+                            top: 0,
+                            left: 0
+                          }}
+                        />
+                      ) : product.images[0].url ? (
+                        <img 
+                          src={product.images[0].url}
+                          alt={product.name}
+                          style={{ 
+                            width: '100%', 
+                            height: '100%', 
+                            objectFit: 'cover',
+                            position: 'absolute',
+                            top: 0,
+                            left: 0
+                          }}
+                        />
+                      ) : (
+                        <div 
+                          style={{ 
+                            width: '100%', 
+                            height: '100%', 
+                            backgroundColor: '#f8f9fa',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: '#6c757d',
+                            fontSize: '14px'
+                          }}
+                        >
+                          No Image
+                        </div>
+                      )
+                    ) : (
+                      <div 
+                        style={{ 
+                          width: '100%', 
+                          height: '100%', 
+                          backgroundColor: '#f8f9fa',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          color: '#6c757d',
+                          fontSize: '14px'
+                        }}
+                      >
+                        No Image Available
+                      </div>
+                    )}
+                  </div>
                   <CardBody className="d-flex flex-column">
                     <CardTitle tag="h6">{product.name}</CardTitle>
                     <CardText className="text-muted small">
