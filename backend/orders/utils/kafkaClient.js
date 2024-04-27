@@ -9,7 +9,7 @@ const logger = require('./logger');
 
 class KafkaClient {
   constructor() {
-    this.kafka = Kafka({
+    this.kafka = new Kafka({
       clientId: config.kafka.clientId,
       brokers: config.kafka.brokers,
       retry: {

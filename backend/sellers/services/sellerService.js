@@ -315,7 +315,8 @@ class SellerService {
       const { 
         businessName, 
         businessType, 
-        description, 
+        description,
+        logoMediaId, 
         website,
         industry,
         categories,
@@ -351,6 +352,7 @@ class SellerService {
       if (businessName !== undefined) businessUpdateData.businessName = businessName;
       if (businessType !== undefined) businessUpdateData.businessType = businessType;
       if (description !== undefined) businessUpdateData.description = description;
+      if (logoMediaId !== undefined) businessUpdateData.logoMediaId = logoMediaId;
       if (website !== undefined) businessUpdateData.website = website;
       if (industry !== undefined) businessUpdateData.industry = industry;
       if (categories !== undefined) businessUpdateData.categories = categories;

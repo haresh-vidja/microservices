@@ -62,6 +62,7 @@ const sellerSchemas = {
     businessName: Joi.string().trim().max(100).optional(),
     businessType: Joi.string().valid('individual', 'partnership', 'llc', 'corporation', 'other').optional(),
     description: Joi.string().max(1000).optional(),
+    logoMediaId: Joi.string().optional(),
     website: Joi.string().uri().optional(),
     industry: Joi.string().trim().max(100).optional(),
     categories: Joi.array().items(Joi.string()).optional(),

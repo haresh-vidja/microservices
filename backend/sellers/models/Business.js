@@ -100,6 +100,11 @@ const businessSchema = new mongoose.Schema({
   },
   
   // Business Details
+  logoMediaId: {
+    type: String,
+    trim: true,
+    default: null
+  },
   industry: {
     type: String,
     trim: true,
