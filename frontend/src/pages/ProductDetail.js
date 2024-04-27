@@ -39,6 +39,13 @@ const ProductDetail = () => {
   const addToCart = () => {
     if (!product) return;
     
+    const customerToken = localStorage.getItem('customerToken');
+    
+    if (!customerToken) {
+      toast.error('Please login to add items to cart');
+      return;
+    }
+    
     const cartItems = JSON.parse(localStorage.getItem('cartItems') || '[]');
     const existingItem = cartItems.find(item => item.id === product.id);
     

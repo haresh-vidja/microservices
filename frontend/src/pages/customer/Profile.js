@@ -31,7 +31,7 @@ const CustomerProfile = () => {
   const fetchCustomerProfile = async () => {
     try {
       const token = localStorage.getItem('customerToken');
-      const response = await axios.get('/api/customer/profile', {
+      const response = await axios.get('/api/customer/customers/profile', {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -73,7 +73,7 @@ const CustomerProfile = () => {
 
     try {
       const token = localStorage.getItem('customerToken');
-      const response = await axios.put('/api/customer/profile', formData, {
+      const response = await axios.put('/api/customer/customers/profile', formData, {
         headers: { Authorization: `Bearer ${token}` }
       });
 

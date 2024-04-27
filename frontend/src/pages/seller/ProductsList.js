@@ -59,6 +59,9 @@ const ProductsList = () => {
       const token = localStorage.getItem('sellerToken');
       const sellerData = JSON.parse(localStorage.getItem('sellerData') || '{}');
       
+      console.log('ProductsList: sellerData:', sellerData);
+      console.log('ProductsList: expected alex.tech sellerId should be: 6895fc2fc8976794b14a5fce');
+      
       if (!token || !sellerData.id) {
         toast.error('Please login again');
         return;
