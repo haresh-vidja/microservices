@@ -3,6 +3,7 @@ import { Container, Row, Col, Card, CardImg, CardBody, Button, Badge, Input, For
 import { useParams, useHistory } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'react-toastify';
+import cartService from '../services/cartService';
 
 const ProductDetail = () => {
   const { id } = useParams();
@@ -36,27 +37,14 @@ const ProductDetail = () => {
     }
   };
 
-  const addToCart = () => {
+  const addToCart = async () => {
     if (!product) return;
     
-    const customerToken = localStorage.getItem('customerToken');
-    
-    if (!customerToken) {
-      toast.error('Please login to add items to cart');
-      return;
+    try {
+      await cartService.addToCart(product, quantity);
+    } catch (error) {
+      console.error('Add to cart error:', error);
     }
-    
-    const cartItems = JSON.parse(localStorage.getItem('cartItems') || '[]');
-    const existingItem = cartItems.find(item => item.id === product.id);
-    
-    if (existingItem) {
-      existingItem.quantity += quantity;
-    } else {
-      cartItems.push({ ...product, quantity });
-    }
-    
-    localStorage.setItem('cartItems', JSON.stringify(cartItems));
-    toast.success(`${quantity} item(s) added to cart!`);
   };
 
   const handleQuantityChange = (e) => {

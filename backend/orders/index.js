@@ -90,7 +90,12 @@ app.use(errorHandler);
 const startServer = async () => {
   try {
     await connectDB();
-    await kafkaClient.initProducer();
+    
+    // Try to initialize Kafka but don't block server startup
+    kafkaClient.initProducer().catch(error => {
+      console.error('Kafka initialization failed (non-blocking):', error.message);
+      console.log('Orders service will continue without Kafka messaging');
+    });
     
     app.listen(PORT, () => {
       console.log(`Orders Service running on http://localhost:${PORT}`);

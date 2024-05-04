@@ -38,7 +38,7 @@ const { asyncHandler } = require('../middleware/errorHandler');
  */
 router.post('/cart/add', verifyToken, asyncHandler(async (req, res) => {
     const { productId, quantity } = req.body;
-    const customerId = req.user.id;
+    const customerId = req.user.id || req.user._id;
 
     const result = await orderService.addToCart(customerId, productId, quantity);
     
@@ -59,7 +59,7 @@ router.post('/cart/add', verifyToken, asyncHandler(async (req, res) => {
  *       - bearerAuth: []
  */
 router.get('/cart', verifyToken, asyncHandler(async (req, res) => {
-    const customerId = req.user.id;
+    const customerId = req.user.id || req.user._id;
     const cart = await orderService.getCart(customerId);
     
     res.json({
@@ -79,7 +79,7 @@ router.get('/cart', verifyToken, asyncHandler(async (req, res) => {
  */
 router.put('/cart/update', verifyToken, asyncHandler(async (req, res) => {
     const { productId, quantity } = req.body;
-    const customerId = req.user.id;
+    const customerId = req.user.id || req.user._id;
 
     const result = await orderService.updateCartItem(customerId, productId, quantity);
     
@@ -101,7 +101,7 @@ router.put('/cart/update', verifyToken, asyncHandler(async (req, res) => {
  */
 router.delete('/cart/remove', verifyToken, asyncHandler(async (req, res) => {
     const { productId } = req.body;
-    const customerId = req.user.id;
+    const customerId = req.user.id || req.user._id;
 
     await orderService.removeFromCart(customerId, productId);
     
@@ -121,7 +121,7 @@ router.delete('/cart/remove', verifyToken, asyncHandler(async (req, res) => {
  *       - bearerAuth: []
  */
 router.delete('/cart/clear', verifyToken, asyncHandler(async (req, res) => {
-    const customerId = req.user.id;
+    const customerId = req.user.id || req.user._id;
     await orderService.clearCart(customerId);
     
     res.json({
@@ -141,7 +141,7 @@ router.delete('/cart/clear', verifyToken, asyncHandler(async (req, res) => {
  */
 router.post('/orders/place', verifyToken, asyncHandler(async (req, res) => {
     const { shippingAddress, paymentMethod, notes } = req.body;
-    const customerId = req.user.id;
+    const customerId = req.user.id || req.user._id;
 
     const order = await orderService.placeOrder(customerId, {
         shippingAddress,
@@ -166,7 +166,7 @@ router.post('/orders/place', verifyToken, asyncHandler(async (req, res) => {
  *       - bearerAuth: []
  */
 router.get('/orders', verifyToken, asyncHandler(async (req, res) => {
-    const customerId = req.user.id;
+    const customerId = req.user.id || req.user._id;
     const { page = 1, limit = 10, status } = req.query;
 
     const orders = await orderService.getCustomerOrders(customerId, {
@@ -192,7 +192,7 @@ router.get('/orders', verifyToken, asyncHandler(async (req, res) => {
  */
 router.get('/orders/:id', verifyToken, asyncHandler(async (req, res) => {
     const { id } = req.params;
-    const customerId = req.user.id;
+    const customerId = req.user.id || req.user._id;
 
     const order = await orderService.getOrderById(id, customerId);
     
@@ -220,7 +220,7 @@ router.get('/orders/:id', verifyToken, asyncHandler(async (req, res) => {
  */
 router.put('/orders/:id/cancel', verifyToken, asyncHandler(async (req, res) => {
     const { id } = req.params;
-    const customerId = req.user.id;
+    const customerId = req.user.id || req.user._id;
 
     const order = await orderService.cancelOrder(id, customerId);
     

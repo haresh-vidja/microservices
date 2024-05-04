@@ -3,6 +3,7 @@ import { Container, Row, Col, Card, CardBody, Form, FormGroup, Label, Input, But
 import { Link, useHistory } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'react-toastify';
+import cartService from '../../services/cartService';
 
 const CustomerLogin = () => {
   const [formData, setFormData] = useState({
@@ -30,10 +31,18 @@ const CustomerLogin = () => {
       const response = await axios.post('/api/customer/customers/signin', formData);
       
       if (response.data.success) {
-        localStorage.setItem('customerToken', response.data.data.accessToken);
+        const token = response.data.data.token;
+        localStorage.setItem('customerToken', token);
         localStorage.setItem('customerData', JSON.stringify(response.data.data.customer));
         
+        // Merge guest cart with user cart
+        await cartService.mergeCartOnLogin(token);
+        
         toast.success('Login successful!');
+        
+        // Emit cart updated event
+        window.dispatchEvent(new CustomEvent('cartUpdated'));
+        
         history.push('/');
       }
     } catch (error) {

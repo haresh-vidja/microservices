@@ -333,6 +333,257 @@ class OrderService {
       throw error;
     }
   }
+
+  /**
+   * Get cart for customer
+   */
+  async getCart(customerId) {
+    try {
+      let cart = await Cart.findOne({ customerId });
+      if (!cart) {
+        // Create empty cart if doesn't exist
+        cart = new Cart({ 
+          customerId, 
+          items: [],
+          totalItems: 0,
+          totalAmount: 0
+        });
+        await cart.save();
+      }
+      return cart;
+    } catch (error) {
+      logger.error('Error fetching cart:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Update cart item quantity
+   */
+  async updateCartItem(customerId, productId, quantity) {
+    try {
+      const cart = await Cart.findOne({ customerId });
+      if (!cart) {
+        throw new Error('Cart not found');
+      }
+
+      if (quantity <= 0) {
+        // Remove item if quantity is 0 or less
+        await cart.removeItem(productId);
+      } else {
+        // Check inventory availability
+        const inventoryCheck = await serviceClient.checkInventory([{
+          productId,
+          quantity
+        }]);
+        
+        if (!inventoryCheck.allAvailable) {
+          const item = inventoryCheck.items[0];
+          throw new Error(`Insufficient stock. Available: ${item.availableStock}, Requested: ${quantity}`);
+        }
+
+        // Update quantity
+        await cart.updateItemQuantity(productId, quantity);
+      }
+
+      logger.info(`Cart item updated: ${customerId} - ${productId} - Qty: ${quantity}`);
+      return cart;
+    } catch (error) {
+      logger.error('Error updating cart item:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Remove item from cart
+   */
+  async removeFromCart(customerId, productId) {
+    try {
+      const cart = await Cart.findOne({ customerId });
+      if (!cart) {
+        throw new Error('Cart not found');
+      }
+
+      await cart.removeItem(productId);
+      
+      logger.info(`Item removed from cart: ${customerId} - ${productId}`);
+      return cart;
+    } catch (error) {
+      logger.error('Error removing item from cart:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Clear entire cart
+   */
+  async clearCart(customerId) {
+    try {
+      const cart = await Cart.findOne({ customerId });
+      if (!cart) {
+        throw new Error('Cart not found');
+      }
+
+      await cart.clearCart();
+      
+      logger.info(`Cart cleared: ${customerId}`);
+      return cart;
+    } catch (error) {
+      logger.error('Error clearing cart:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get customer orders
+   */
+  async getCustomerOrders(customerId, options = {}) {
+    try {
+      const { page = 1, limit = 10, status } = options;
+      const query = { customerId };
+      
+      if (status) {
+        query.status = status;
+      }
+
+      const orders = await Order.find(query)
+        .sort({ createdAt: -1 })
+        .limit(limit)
+        .skip((page - 1) * limit);
+
+      const total = await Order.countDocuments(query);
+
+      return {
+        orders,
+        pagination: {
+          page,
+          limit,
+          total,
+          pages: Math.ceil(total / limit)
+        }
+      };
+    } catch (error) {
+      logger.error('Error fetching customer orders:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get order by ID
+   */
+  async getOrderById(orderId, customerId = null) {
+    try {
+      const query = { _id: orderId };
+      if (customerId) {
+        query.customerId = customerId;
+      }
+
+      const order = await Order.findOne(query);
+      return order;
+    } catch (error) {
+      logger.error('Error fetching order by ID:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Update order status (admin function)
+   */
+  async updateOrderStatus(orderId, status, notes = '') {
+    try {
+      const order = await Order.findById(orderId);
+      if (!order) {
+        throw new Error('Order not found');
+      }
+
+      order.status = status;
+      if (notes) {
+        order.notes = notes;
+      }
+      
+      await order.save();
+
+      logger.info(`Order status updated: ${order.orderNumber} - ${status}`);
+      return order;
+    } catch (error) {
+      logger.error('Error updating order status:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get all orders (admin function)
+   */
+  async getAllOrders(options = {}) {
+    try {
+      const { page = 1, limit = 20, status, sellerId } = options;
+      const query = {};
+      
+      if (status) {
+        query.status = status;
+      }
+      
+      if (sellerId) {
+        query['items.sellerId'] = sellerId;
+      }
+
+      const orders = await Order.find(query)
+        .sort({ createdAt: -1 })
+        .limit(limit)
+        .skip((page - 1) * limit);
+
+      const total = await Order.countDocuments(query);
+
+      return {
+        orders,
+        pagination: {
+          page,
+          limit,
+          total,
+          pages: Math.ceil(total / limit)
+        }
+      };
+    } catch (error) {
+      logger.error('Error fetching all orders:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Check inventory availability
+   */
+  async checkInventoryAvailability(items) {
+    try {
+      return await serviceClient.checkInventory(items);
+    } catch (error) {
+      logger.error('Error checking inventory:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Reserve inventory
+   */
+  async reserveInventory(orderId, items, expirationMinutes) {
+    try {
+      return await serviceClient.reserveInventory(orderId, items, expirationMinutes);
+    } catch (error) {
+      logger.error('Error reserving inventory:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Release inventory
+   */
+  async releaseInventory(orderId) {
+    try {
+      return await serviceClient.releaseInventory(orderId, 'Manual release');
+    } catch (error) {
+      logger.error('Error releasing inventory:', error);
+      throw error;
+    }
+  }
 }
 
 module.exports = new OrderService();

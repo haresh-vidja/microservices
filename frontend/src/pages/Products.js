@@ -4,6 +4,7 @@ import { Link, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import SecureImage from '../components/common/SecureImage';
+import cartService from '../services/cartService';
 
 const Products = () => {
   const location = useLocation();
@@ -59,25 +60,12 @@ const Products = () => {
     }
   };
 
-  const addToCart = (product) => {
-    const customerToken = localStorage.getItem('customerToken');
-    
-    if (!customerToken) {
-      toast.error('Please login to add items to cart');
-      return;
+  const addToCart = async (product) => {
+    try {
+      await cartService.addToCart(product, 1);
+    } catch (error) {
+      console.error('Add to cart error:', error);
     }
-    
-    const cartItems = JSON.parse(localStorage.getItem('cartItems') || '[]');
-    const existingItem = cartItems.find(item => item.id === product.id);
-    
-    if (existingItem) {
-      existingItem.quantity += 1;
-    } else {
-      cartItems.push({ ...product, quantity: 1 });
-    }
-    
-    localStorage.setItem('cartItems', JSON.stringify(cartItems));
-    toast.success('Product added to cart!');
   };
 
   const handleSearchChange = (e) => {

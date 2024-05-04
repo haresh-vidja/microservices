@@ -16,7 +16,7 @@ const SERVICE_KEYS = {
     NOTIFICATION_KEY: process.env.NOTIFICATION_SERVICE_KEY || 'notification-secret-key-2024'
 };
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-2024';
+const JWT_SECRET = process.env.JWT_SECRET || 'customer-secret-key';
 
 /**
  * Verify JWT token from Authorization header
