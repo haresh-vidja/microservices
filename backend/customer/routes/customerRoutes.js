@@ -305,6 +305,87 @@ router.get('/',
   })
 );
 
+// Admin endpoints (Service key authentication)
+
+/**
+ * @swagger
+ * /customers/admin:
+ *   get:
+ *     summary: Get all customers for admin (Service only)
+ *     tags: [Admin]
+ *     security:
+ *       - serviceKey: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: [active, inactive]
+ *     responses:
+ *       200:
+ *         description: Customers retrieved successfully
+ */
+router.get('/admin',
+  verifyServiceKey,
+  validateQuery,
+  asyncHandler(async (req, res) => {
+    const result = await customerService.getAllCustomers(req.query);
+    sendSuccess(res, result, 'Customers retrieved successfully');
+  })
+);
+
+/**
+ * @swagger
+ * /customers/admin/{id}/status:
+ *   patch:
+ *     summary: Update customer status (Service only)
+ *     tags: [Admin]
+ *     security:
+ *       - serviceKey: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               isActive:
+ *                 type: boolean
+ *     responses:
+ *       200:
+ *         description: Customer status updated successfully
+ */
+router.patch('/admin/:id/status',
+  verifyServiceKey,
+  asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const { isActive } = req.body;
+    
+    const result = await customerService.updateCustomerStatus(id, isActive);
+    sendSuccess(res, result, 'Customer status updated successfully');
+  })
+);
+
 // Inter-service communication endpoints
 
 /**

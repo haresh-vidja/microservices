@@ -1,0 +1,57 @@
+.admin-layout {
+  min-height: 100vh;
+  background-color: #f8f9fa;
+}
+
+.admin-navbar {
+  height: 60px;
+  box-shadow: 0 2px 4px rgba(0,0,0,.15);
+  background-color: #343a40 !important;
+}
+
+.sidebar-toggle {
+  color: #fff;
+  border: none;
+  background: transparent;
+  padding: 0.25rem 0.5rem;
+  text-decoration: none;
+}
+
+.sidebar-toggle:hover {
+  background-color: rgba(255,255,255,0.1);
+  border-radius: 4px;
+  color: #fff;
+  text-decoration: none;
+}
+
+.sidebar-wrapper {
+  min-height: calc(100vh - 60px);
+  transition: all 0.3s ease;
+}
+
+.main-content-wrapper {
+  min-height: calc(100vh - 60px);
+  background-color: #f8f9fa;
+  transition: all 0.3s ease;
+}
+
+@media (max-width: 768px) {
+  .sidebar-wrapper {
+    position: fixed;
+    z-index: 1050;
+    top: 60px;
+    left: -250px;
+    width: 250px !important;
+    max-width: 250px !important;
+    transition: left 0.3s ease;
+  }
+
+  .sidebar-wrapper.mobile-open {
+    left: 0;
+  }
+
+  .main-content-wrapper {
+    margin-left: 0 !important;
+    width: 100% !important;
+  }
+}

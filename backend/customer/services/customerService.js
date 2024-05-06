@@ -307,7 +307,14 @@ class CustomerService {
    */
   async getAllCustomers(query = {}) {
     try {
-      const { page = 1, limit = 10, sort = '-createdAt', ...filters } = query;
+      const { 
+        page = 1, 
+        limit = 10, 
+        sort = '-createdAt', 
+        search, 
+        status,
+        ...filters 
+      } = query;
       
       const options = {
         page: parseInt(page),
@@ -315,12 +322,35 @@ class CustomerService {
         sort
       };
 
-      const customers = await Customer.find(filters)
+      // Build search query
+      const searchQuery = {};
+      
+      // Add text search if provided
+      if (search) {
+        searchQuery.$or = [
+          { firstName: { $regex: search, $options: 'i' } },
+          { lastName: { $regex: search, $options: 'i' } },
+          { email: { $regex: search, $options: 'i' } },
+          { phone: { $regex: search, $options: 'i' } }
+        ];
+      }
+
+      // Add status filter if provided
+      if (status === 'active') {
+        searchQuery.isActive = true;
+      } else if (status === 'inactive') {
+        searchQuery.isActive = false;
+      }
+
+      // Merge with other filters
+      const finalQuery = { ...searchQuery, ...filters };
+
+      const customers = await Customer.find(finalQuery)
         .sort(options.sort)
         .limit(options.limit)
         .skip((options.page - 1) * options.limit);
 
-      const total = await Customer.countDocuments(filters);
+      const total = await Customer.countDocuments(finalQuery);
 
       return {
         customers,
@@ -328,7 +358,7 @@ class CustomerService {
           page: options.page,
           limit: options.limit,
           total,
-          pages: Math.ceil(total / options.limit)
+          totalPages: Math.ceil(total / options.limit)
         }
       };
     } catch (error) {
@@ -377,6 +407,33 @@ class CustomerService {
     } catch (error) {
       logger.error('Error verifying customer:', error);
       return false;
+    }
+  }
+
+  /**
+   * Update customer status (admin only)
+   * @param {string} customerId - Customer ID
+   * @param {boolean} isActive - New status
+   * @returns {Promise<Object>} Updated customer
+   */
+  async updateCustomerStatus(customerId, isActive) {
+    try {
+      const customer = await Customer.findByIdAndUpdate(
+        customerId,
+        { isActive },
+        { new: true }
+      ).select('-password -refreshToken');
+
+      if (!customer) {
+        throw new Error('Customer not found');
+      }
+
+      logger.info(`Customer status updated: ${customer.email} -> ${isActive ? 'active' : 'inactive'}`);
+
+      return customer;
+    } catch (error) {
+      logger.error('Error updating customer status:', error);
+      throw error;
     }
   }
 }

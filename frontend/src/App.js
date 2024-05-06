@@ -14,6 +14,7 @@ import ProductDetail from './pages/ProductDetail';
 import Cart from './pages/Cart';
 import Profile from './pages/customer/Profile';
 import SellerApp from './pages/seller/SellerApp';
+import AdminApp from './pages/admin/AdminApp';
 
 function App() {
   return (
@@ -27,6 +28,7 @@ function App() {
             <Route path="/customer/register" component={CustomerRegister} />
             <Route path="/customer/profile" component={Profile} />
             <Route path="/seller" component={SellerApp} />
+            <Route path="/admin" component={AdminApp} />
             <Route path="/products" component={Products} />
             <Route path="/product/:id" component={ProductDetail} />
             <Route path="/cart" component={Cart} />

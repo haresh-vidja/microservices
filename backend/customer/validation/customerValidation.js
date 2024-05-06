@@ -192,6 +192,15 @@ const customerSchemas = {
       .optional(),
     
     isVerified: Joi.boolean()
+      .optional(),
+    
+    search: Joi.string()
+      .optional()
+      .trim()
+      .min(1),
+    
+    status: Joi.string()
+      .valid('active', 'inactive', 'all')
       .optional()
   })
 };

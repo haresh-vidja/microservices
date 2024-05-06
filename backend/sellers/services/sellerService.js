@@ -278,6 +278,105 @@ class SellerService {
   }
 
   /**
+   * Get all sellers for admin (with search and filtering)
+   * @param {Object} query - Query parameters
+   * @returns {Object} List of sellers
+   */
+  async getAllSellers(query = {}) {
+    try {
+      const { 
+        page = 1, 
+        limit = 10, 
+        sort = '-createdAt', 
+        search, 
+        status,
+        ...filters 
+      } = query;
+      
+      const options = {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        sort
+      };
+
+      // Build search query
+      const searchQuery = {};
+      
+      // Add text search if provided
+      if (search) {
+        searchQuery.$or = [
+          { firstName: { $regex: search, $options: 'i' } },
+          { lastName: { $regex: search, $options: 'i' } },
+          { email: { $regex: search, $options: 'i' } },
+          { phone: { $regex: search, $options: 'i' } },
+          { businessName: { $regex: search, $options: 'i' } }
+        ];
+      }
+
+      // Add status filter if provided
+      if (status === 'active') {
+        searchQuery.isActive = true;
+      } else if (status === 'inactive') {
+        searchQuery.isActive = false;
+      }
+
+      // Merge with other filters
+      const finalQuery = { ...searchQuery, ...filters };
+
+      const sellers = await Seller.find(finalQuery)
+        .populate('role', 'name level')
+        .sort(options.sort)
+        .limit(options.limit)
+        .skip((options.page - 1) * options.limit)
+        .select('-password -refreshToken');
+
+      const total = await Seller.countDocuments(finalQuery);
+
+      return {
+        sellers,
+        pagination: {
+          page: options.page,
+          limit: options.limit,
+          total,
+          totalPages: Math.ceil(total / options.limit)
+        }
+      };
+    } catch (error) {
+      logger.error('Error fetching sellers for admin:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Update seller status (admin only)
+   * @param {string} sellerId - Seller ID
+   * @param {boolean} isActive - New status
+   * @returns {Promise<Object>} Updated seller
+   */
+  async updateSellerStatus(sellerId, isActive) {
+    try {
+      const seller = await Seller.findByIdAndUpdate(
+        sellerId,
+        { isActive },
+        { new: true }
+      )
+        .populate('role', 'name level')
+        .select('-password -refreshToken');
+
+      if (!seller) {
+        throw new Error('Seller not found');
+      }
+
+      logger.info(`Seller status updated: ${seller.email} -> ${isActive ? 'active' : 'inactive'}`);
+
+      return seller;
+    } catch (error) {
+      logger.error('Error updating seller status:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Get seller profile
    * @param {String} sellerId - Seller ID
    * @returns {Object} Seller profile with business

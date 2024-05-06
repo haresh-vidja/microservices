@@ -425,4 +425,89 @@ router.post('/service/verify',
   })
 );
 
+/**
+ * @swagger
+ * /sellers/admin:
+ *   get:
+ *     summary: Get all sellers for admin
+ *     tags: [Admin]
+ *     security:
+ *       - serviceKey: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 100
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: [active, inactive, all]
+ *     responses:
+ *       200:
+ *         description: Sellers retrieved successfully
+ */
+router.get('/admin',
+  verifyServiceKey,
+  asyncHandler(async (req, res) => {
+    const result = await sellerService.getAllSellers(req.query);
+    sendSuccess(res, result, 'Sellers retrieved successfully');
+  })
+);
+
+/**
+ * @swagger
+ * /sellers/admin/{id}/status:
+ *   patch:
+ *     summary: Update seller status (Admin only)
+ *     tags: [Admin]
+ *     security:
+ *       - serviceKey: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               isActive:
+ *                 type: boolean
+ *             required:
+ *               - isActive
+ *     responses:
+ *       200:
+ *         description: Seller status updated successfully
+ */
+router.patch('/admin/:id/status',
+  verifyServiceKey,
+  asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const { isActive } = req.body;
+    
+    if (typeof isActive !== 'boolean') {
+      return sendError(res, 'isActive must be a boolean', 400);
+    }
+    
+    const seller = await sellerService.updateSellerStatus(id, isActive);
+    sendSuccess(res, seller, 'Seller status updated successfully');
+  })
+);
+
 module.exports = router;

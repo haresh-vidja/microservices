@@ -8,15 +8,19 @@ const Header = () => {
   const [isOpen, setIsOpen] = React.useState(false);
   const [customerToken, setCustomerToken] = React.useState(null);
   const [sellerToken, setSellerToken] = React.useState(null);
+  const [adminToken, setAdminToken] = React.useState(null);
   const [cartCount, setCartCount] = React.useState(0);
   const [customerData, setCustomerData] = React.useState({});
+  const [adminData, setAdminData] = React.useState({});
   const [isLoaded, setIsLoaded] = React.useState(false);
   
   React.useEffect(() => {
     // Initialize data from localStorage
     setCustomerToken(localStorage.getItem('customerToken'));
     setSellerToken(localStorage.getItem('sellerToken'));
+    setAdminToken(localStorage.getItem('adminToken'));
     setCustomerData(JSON.parse(localStorage.getItem('customerData') || '{}'));
+    setAdminData(JSON.parse(localStorage.getItem('adminInfo') || '{}'));
     setIsLoaded(true);
     
     // Load cart count
@@ -46,8 +50,10 @@ const Header = () => {
     // Clear all auth data
     localStorage.removeItem('customerToken');
     localStorage.removeItem('sellerToken');
+    localStorage.removeItem('adminToken');
     localStorage.removeItem('customerData');
     localStorage.removeItem('sellerData');
+    localStorage.removeItem('adminInfo');
     
     // Clear cart data
     cartService.clearAllCartData();
@@ -55,7 +61,9 @@ const Header = () => {
     // Update state immediately
     setCustomerToken(null);
     setSellerToken(null);
+    setAdminToken(null);
     setCustomerData({});
+    setAdminData({});
     setCartCount(0);
     
     history.push('/');
@@ -79,7 +87,7 @@ const Header = () => {
           <NavItem>
             <NavLink tag={Link} to="/products">Products</NavLink>
           </NavItem>
-          {!sellerToken && (
+          {!sellerToken && !adminToken && (
             <NavItem>
               <NavLink tag={Link} to="/cart" className="d-flex align-items-center">
                 <i className="fas fa-shopping-cart mr-1"></i>
@@ -94,13 +102,16 @@ const Header = () => {
           )}
         </Nav>
         <Nav navbar>
-          {!customerToken && !sellerToken ? (
+          {!customerToken && !sellerToken && !adminToken ? (
             <>
               <NavItem>
                 <NavLink tag={Link} to="/customer/login">Customer Login</NavLink>
               </NavItem>
               <NavItem>
                 <NavLink tag={Link} to="/seller/login">Seller Login</NavLink>
+              </NavItem>
+              <NavItem>
+                <NavLink tag={Link} to="/admin/login">Admin Login</NavLink>
               </NavItem>
             </>
           ) : (
@@ -125,6 +136,19 @@ const Header = () => {
                   </NavItem>
                   <NavItem>
                     <NavLink tag={Link} to="/seller/profile">Profile</NavLink>
+                  </NavItem>
+                </>
+              )}
+              {adminToken && adminData && (
+                <>
+                  <NavItem>
+                    <NavLink className="d-flex align-items-center">
+                      <i className="fas fa-shield-alt mr-1"></i>
+                      Admin: {adminData.firstName || adminData.email || 'Administrator'}
+                    </NavLink>
+                  </NavItem>
+                  <NavItem>
+                    <NavLink tag={Link} to="/admin/dashboard">Admin Panel</NavLink>
                   </NavItem>
                 </>
               )}

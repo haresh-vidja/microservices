@@ -8,9 +8,99 @@ const cors = require('cors');
 const helmet = require('helmet');
 const compression = require('compression');
 const axios = require('axios');
+const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
 const app = express();
 const PORT = process.env.PORT || 3006;
+
+// MongoDB connection
+const MONGODB_URI = process.env.ADMIN_MONGODB_URI || 'mongodb://localhost:27017/admin_db';
+mongoose.connect(MONGODB_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+}).then(() => {
+  console.log('Admin DB connected:', MONGODB_URI.split('@').pop());
+}).catch(err => {
+  console.error('Admin DB connection error:', err);
+});
+
+// Admin Schema
+const adminSchema = new mongoose.Schema({
+  firstName: { type: String, required: true },
+  lastName: { type: String, required: true },
+  email: { type: String, required: true, unique: true },
+  password: { type: String, required: true },
+  phone: { type: String },
+  role: { 
+    type: String, 
+    enum: ['super_admin', 'admin', 'moderator'], 
+    default: 'admin' 
+  },
+  permissions: [{
+    type: String,
+    enum: [
+      'manage_users', 'manage_sellers', 'manage_products', 
+      'manage_orders', 'view_analytics', 'manage_settings',
+      'send_notifications', 'moderate_content'
+    ]
+  }],
+  isActive: { type: Boolean, default: true },
+  lastLogin: { type: Date }
+}, {
+  timestamps: true,
+  versionKey: false
+});
+
+const Admin = mongoose.model('Admin', adminSchema);
+
+// JWT Secret
+const JWT_SECRET = process.env.JWT_SECRET || 'admin-secret-key';
+
+// Admin authentication middleware
+const verifyAdminToken = (req, res, next) => {
+  try {
+    const authHeader = req.headers.authorization;
+    
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({
+        success: false,
+        message: 'Access token required'
+      });
+    }
+
+    const token = authHeader.substring(7);
+    
+    try {
+      const decoded = jwt.verify(token, JWT_SECRET);
+      req.admin = decoded;
+      next();
+    } catch (jwtError) {
+      if (jwtError.name === 'TokenExpiredError') {
+        return res.status(401).json({
+          success: false,
+          message: 'Token expired'
+        });
+      } else if (jwtError.name === 'JsonWebTokenError') {
+        return res.status(401).json({
+          success: false,
+          message: 'Invalid token'
+        });
+      } else {
+        return res.status(401).json({
+          success: false,
+          message: 'Token verification failed'
+        });
+      }
+    }
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: 'Authentication error'
+    });
+  }
+};
 
 // Middleware
 app.use(helmet());
@@ -38,8 +128,87 @@ app.get('/health', (req, res) => {
   });
 });
 
+// Admin Login
+app.post('/api/v1/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email and password are required'
+      });
+    }
+
+    // Find admin by email
+    const admin = await Admin.findOne({ email: email.toLowerCase() });
+    if (!admin) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid credentials'
+      });
+    }
+
+    // Check if admin is active
+    if (!admin.isActive) {
+      return res.status(401).json({
+        success: false,
+        message: 'Account is deactivated'
+      });
+    }
+
+    // Verify password
+    const isPasswordValid = await bcrypt.compare(password, admin.password);
+    if (!isPasswordValid) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid credentials'
+      });
+    }
+
+    // Update last login
+    admin.lastLogin = new Date();
+    await admin.save();
+
+    // Generate JWT token
+    const token = jwt.sign(
+      { 
+        id: admin._id, 
+        email: admin.email, 
+        role: admin.role,
+        type: 'admin'
+      },
+      JWT_SECRET,
+      { expiresIn: '24h' }
+    );
+
+    res.json({
+      success: true,
+      data: {
+        token,
+        admin: {
+          id: admin._id,
+          firstName: admin.firstName,
+          lastName: admin.lastName,
+          email: admin.email,
+          role: admin.role,
+          permissions: admin.permissions
+        }
+      },
+      message: 'Login successful'
+    });
+
+  } catch (error) {
+    console.error('Admin login error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error'
+    });
+  }
+});
+
 // Get dashboard statistics
-app.get('/api/v1/dashboard/stats', async (req, res) => {
+app.get('/api/v1/dashboard/stats', verifyAdminToken, async (req, res) => {
   try {
     const stats = {};
 
@@ -110,7 +279,7 @@ app.get('/api/v1/dashboard/stats', async (req, res) => {
 });
 
 // Get all services health
-app.get('/api/v1/services/health', async (req, res) => {
+app.get('/api/v1/services/health', verifyAdminToken, async (req, res) => {
   try {
     const healthChecks = {};
 
@@ -148,7 +317,7 @@ app.get('/api/v1/services/health', async (req, res) => {
 });
 
 // Proxy requests to other services
-app.all('/api/v1/proxy/:service/*', async (req, res) => {
+app.all('/api/v1/proxy/:service/*', verifyAdminToken, async (req, res) => {
   try {
     const serviceName = req.params.service;
     const path = req.params[0];
@@ -162,11 +331,29 @@ app.all('/api/v1/proxy/:service/*', async (req, res) => {
 
     const serviceUrl = `${services[serviceName]}/${path}`;
     
+    // Prepare headers with service key for authentication
+    const headers = { ...req.headers };
+    
+    // Add service key for inter-service communication
+    headers['x-service-key'] = 'admin-secret-key-2024';
+    
+    // Remove original authorization header since we use service key
+    delete headers.authorization;
+    
+    // Remove accept-encoding to prevent compression issues
+    delete headers['accept-encoding'];
+    
+    // Set accept header for JSON
+    headers['accept'] = 'application/json';
+    
     const config = {
       method: req.method,
       url: serviceUrl,
-      headers: { ...req.headers },
-      timeout: 30000
+      headers: headers,
+      params: req.query, // Forward query parameters
+      timeout: 30000,
+      decompress: true, // Ensure axios handles decompression
+      responseType: 'json' // Explicitly request JSON
     };
 
     if (['POST', 'PUT', 'PATCH'].includes(req.method)) {
@@ -174,9 +361,13 @@ app.all('/api/v1/proxy/:service/*', async (req, res) => {
     }
 
     const response = await axios(config);
+    
+    // Set proper content type
+    res.setHeader('Content-Type', 'application/json');
     res.status(response.status).json(response.data);
 
   } catch (error) {
+    console.error('Proxy error:', error.message);
     if (error.response) {
       res.status(error.response.status).json(error.response.data);
     } else {
