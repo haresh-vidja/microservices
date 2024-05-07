@@ -382,7 +382,7 @@ router.post('/service/bulk',
     }
     
     const sellers = await sellerService.getSellersByIds(sellerIds);
-    sendSuccess(res, 'Sellers retrieved successfully', sellers);
+    sendSuccess(res, sellers, 'Sellers retrieved successfully');
   })
 );
 

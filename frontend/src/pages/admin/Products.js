@@ -4,7 +4,7 @@ import {
   Col, 
   Card, 
   CardBody, 
-  CardTitle, 
+  
   Table,
   Badge,
   Button,
@@ -22,6 +22,7 @@ import { toast } from 'react-toastify';
 
 const AdminProducts = () => {
   const [products, setProducts] = useState([]);
+  const [sellers, setSellers] = useState({});
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
@@ -32,7 +33,21 @@ const AdminProducts = () => {
 
   useEffect(() => {
     fetchProducts();
-  }, [currentPage, searchTerm, filterStatus]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPage, filterStatus]);
+
+  // Add search on Enter key
+  const handleSearchKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      setCurrentPage(1); // Reset to first page on search
+      fetchProducts();
+    }
+  };
+
+  const handleSearchClick = () => {
+    setCurrentPage(1); // Reset to first page on search
+    fetchProducts();
+  };
 
   const fetchProducts = async () => {
     try {
@@ -41,19 +56,65 @@ const AdminProducts = () => {
       
       const params = {
         page: currentPage,
-        limit: 10,
-        search: searchTerm || undefined,
-        status: filterStatus !== 'all' ? filterStatus : undefined
+        limit: 10
       };
+      
+      // Only add search if it has value
+      if (searchTerm && searchTerm.trim()) {
+        params.search = searchTerm.trim();
+      }
+      
+      // Only add status if not 'all'
+      if (filterStatus !== 'all') {
+        params.status = filterStatus;
+      }
 
-      const response = await axios.get('/api/admin/proxy/products/api/v1/products', {
+      const response = await axios.get('/api/admin/proxy/products/api/v1/products/admin', {
         headers: { Authorization: `Bearer ${token}` },
         params
       });
 
       if (response.data.success) {
-        setProducts(response.data.data.products || []);
+        const productsData = response.data.data.products || [];
+        setProducts(productsData);
         setTotalPages(response.data.data.pagination?.totalPages || 1);
+        
+        // Extract unique seller IDs
+        const sellerIds = [...new Set(productsData
+          .map(p => p.sellerId)
+          .filter(id => id && id !== null))];
+        
+        
+        if (sellerIds.length > 0) {
+          // Fetch seller information
+          try {
+            const sellersResponse = await axios.post('/api/admin/proxy/sellers/api/v1/sellers/service/bulk', 
+              { sellerIds },
+              { headers: { Authorization: `Bearer ${token}` } }
+            );
+            
+            if (sellersResponse.data.success) {
+              // Create a map of sellerId to seller info
+              const sellersMap = {};
+              sellersResponse.data.data.forEach(seller => {
+                // Products use MongoDB _id, but sellers API might return 'id' or '_id'
+                // Map both to ensure we can find sellers regardless of which field is used
+                const sellerId = seller._id || seller.id;
+                if (sellerId) {
+                  sellersMap[sellerId] = seller;
+                  // Also map the other format for redundancy
+                  if (seller.id && seller._id) {
+                    sellersMap[seller.id] = seller;
+                  }
+                }
+              });
+              setSellers(sellersMap);
+            }
+          } catch (sellerError) {
+            console.error('Error fetching sellers:', sellerError);
+            // Continue without seller names
+          }
+        }
       }
     } catch (error) {
       console.error('Error fetching products:', error);
@@ -66,7 +127,7 @@ const AdminProducts = () => {
   const handleStatusUpdate = async (productId, newStatus) => {
     try {
       const token = localStorage.getItem('adminToken');
-      await axios.patch(`/api/admin/proxy/products/api/v1/products/${productId}/status`, {
+      await axios.patch(`/api/admin/proxy/products/api/v1/products/admin/${productId}/status`, {
         status: newStatus
       }, {
         headers: { Authorization: `Bearer ${token}` }
@@ -131,12 +192,14 @@ const AdminProducts = () => {
               <InputGroup>
                 <Input
                   type="text"
-                  placeholder="Search by product name, SKU, or seller..."
+                  placeholder="Search by product name, category, or description..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
+                  onKeyDown={handleSearchKeyDown}
                 />
-                <Button color="primary" onClick={fetchProducts}>
-                  <i className="fas fa-search"></i>
+                <Button color="primary" onClick={handleSearchClick}>
+                  <i className="fas fa-search me-2"></i>
+                  Search
                 </Button>
               </InputGroup>
             </Col>
@@ -202,7 +265,7 @@ const AdminProducts = () => {
                 </thead>
                 <tbody>
                   {products.map((product) => (
-                    <tr key={product.id}>
+                    <tr key={product._id}>
                       <td>
                         <div className="d-flex align-items-center">
                           <div className="mr-3" style={{ width: '50px', height: '50px' }}>
@@ -244,54 +307,44 @@ const AdminProducts = () => {
                         )}
                       </td>
                       <td>
-                        <span className={product.quantity > 0 ? 'text-success' : 'text-danger'}>
-                          {product.quantity || 0}
+                        <span className={product.stock > 0 ? 'text-success' : 'text-danger'}>
+                          {product.stock || 0}
                         </span>
                       </td>
-                      <td>{getStatusBadge(product.status)}</td>
+                      <td>{getStatusBadge(product.isActive ? 'active' : 'inactive')}</td>
                       <td>
                         <small className="text-muted">
-                          {product.sellerInfo?.businessName || `Seller ${product.sellerId}`}
+                          {product.sellerId && sellers[product.sellerId] ? 
+                           (sellers[product.sellerId].businessName || 
+                            (sellers[product.sellerId].firstName && sellers[product.sellerId].lastName ? 
+                             `${sellers[product.sellerId].firstName} ${sellers[product.sellerId].lastName}` : 
+                             'Seller Name Not Available')) :
+                           (product.sellerId ? `Unknown Seller (${product.sellerId.slice(0, 8)}...)` : 'No Seller')}
                         </small>
                       </td>
                       <td>{formatDate(product.createdAt)}</td>
                       <td>
-                        <ButtonGroup size="sm">
+                        <div className="d-flex gap-2">
                           <Button 
+                            size="sm"
                             color="info" 
                             onClick={() => handleViewDetails(product)}
                             title="View Details"
                           >
-                            <i className="fas fa-eye"></i>
+                            <i className="fas fa-eye me-1"></i>
+                            View
                           </Button>
-                          {product.status === 'pending' && (
-                            <>
-                              <Button 
-                                color="success"
-                                onClick={() => handleStatusUpdate(product.id, 'active')}
-                                title="Approve"
-                              >
-                                <i className="fas fa-check"></i>
-                              </Button>
-                              <Button 
-                                color="danger"
-                                onClick={() => handleStatusUpdate(product.id, 'rejected')}
-                                title="Reject"
-                              >
-                                <i className="fas fa-times"></i>
-                              </Button>
-                            </>
-                          )}
-                          {product.status === 'active' && (
-                            <Button 
-                              color="warning"
-                              onClick={() => handleStatusUpdate(product.id, 'inactive')}
-                              title="Deactivate"
-                            >
-                              <i className="fas fa-ban"></i>
-                            </Button>
-                          )}
-                        </ButtonGroup>
+                          <Button 
+                            size="sm"
+                            color={product.isActive ? 'warning' : 'success'}
+                            onClick={() => handleStatusUpdate(product._id, product.isActive ? 'inactive' : 'active')}
+                            title={product.isActive ? 'Deactivate Product' : 'Activate Product'}
+                            disabled={loading}
+                          >
+                            <i className={`fas fa-${product.isActive ? 'ban' : 'check'} me-1`}></i>
+                            {product.isActive ? 'Deactivate' : 'Activate'}
+                          </Button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -339,12 +392,15 @@ const AdminProducts = () => {
                 {selectedProduct.comparePrice && (
                   <p><strong>Compare Price:</strong> {formatPrice(selectedProduct.comparePrice)}</p>
                 )}
-                <p><strong>Quantity:</strong> {selectedProduct.quantity || 0}</p>
-                <p><strong>Status:</strong> {getStatusBadge(selectedProduct.status)}</p>
+                <p><strong>Stock:</strong> {selectedProduct.stock || 0}</p>
+                <p><strong>Status:</strong> {getStatusBadge(selectedProduct.isActive ? 'active' : 'inactive')}</p>
               </Col>
               <Col md="6">
                 <h6>Seller & Categories</h6>
-                <p><strong>Seller ID:</strong> {selectedProduct.sellerId}</p>
+                <p><strong>Seller:</strong> {sellers[selectedProduct.sellerId]?.businessName || 
+                  (sellers[selectedProduct.sellerId]?.firstName && sellers[selectedProduct.sellerId]?.lastName ? 
+                   `${sellers[selectedProduct.sellerId].firstName} ${sellers[selectedProduct.sellerId].lastName}` : 
+                   (selectedProduct.sellerId ? `Unknown Seller (ID: ${selectedProduct.sellerId})` : 'No Seller'))}</p>
                 <p><strong>Category:</strong> {selectedProduct.category || 'Uncategorized'}</p>
                 <p><strong>Subcategory:</strong> {selectedProduct.subcategory || 'None'}</p>
                 <p><strong>Tags:</strong> {selectedProduct.tags?.join(', ') || 'None'}</p>
@@ -374,7 +430,7 @@ const AdminProducts = () => {
               </Col>
               <Col md="6">
                 <h6>Product ID</h6>
-                <p><strong>ID:</strong> {selectedProduct.id}</p>
+                <p><strong>ID:</strong> {selectedProduct._id}</p>
               </Col>
             </Row>
           )}

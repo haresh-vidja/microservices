@@ -430,6 +430,115 @@ class ProductService {
       actualSellerId: product.sellerId
     };
   }
+
+  /**
+   * Get all products for admin (with search and filtering)
+   */
+  async getAllProducts(query = {}) {
+    try {
+      const { 
+        page = 1, 
+        limit = 10, 
+        sort = '-createdAt', 
+        search, 
+        status,
+        category,
+        sellerId,
+        ...filters 
+      } = query;
+      
+      const options = {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        sort
+      };
+
+      // Build search query
+      const searchQuery = {};
+      
+      // Add text search if provided
+      if (search) {
+        searchQuery.$or = [
+          { name: { $regex: search, $options: 'i' } },
+          { description: { $regex: search, $options: 'i' } },
+          { category: { $regex: search, $options: 'i' } },
+          { tags: { $regex: search, $options: 'i' } }
+        ];
+      }
+
+      // Add status filter if provided
+      if (status === 'active') {
+        searchQuery.isActive = true;
+      } else if (status === 'inactive') {
+        searchQuery.isActive = false;
+      }
+
+      // Add category filter if provided
+      if (category) {
+        searchQuery.category = { $regex: category, $options: 'i' };
+      }
+
+      // Add seller filter if provided
+      if (sellerId) {
+        searchQuery.sellerId = sellerId;
+      }
+
+      // Merge with other filters
+      const finalQuery = { ...searchQuery, ...filters };
+
+      const products = await Product.find(finalQuery)
+        .sort(options.sort)
+        .limit(options.limit)
+        .skip((options.page - 1) * options.limit);
+
+      const total = await Product.countDocuments(finalQuery);
+
+      return {
+        products,
+        pagination: {
+          page: options.page,
+          limit: options.limit,
+          total,
+          totalPages: Math.ceil(total / options.limit)
+        }
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  /**
+   * Update product status (admin only)
+   */
+  async updateProductStatus(productId, status) {
+    try {
+      const product = await Product.findByIdAndUpdate(
+        productId,
+        { 
+          isActive: status === 'active',
+          status: status
+        },
+        { new: true }
+      );
+
+      if (!product) {
+        throw new Error('Product not found');
+      }
+
+      // Create history entry
+      await new ProductHistory({
+        productId: product._id,
+        type: 'status_change',
+        previousStatus: product.isActive ? 'inactive' : 'active',
+        newStatus: status,
+        notes: `Product status updated by admin to ${status}`
+      }).save();
+
+      return product;
+    } catch (error) {
+      throw error;
+    }
+  }
 }
 
 module.exports = new ProductService();

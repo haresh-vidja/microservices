@@ -559,7 +559,7 @@ class SellerService {
       .populate('business', 'businessName businessType address');
 
       return sellers.map(seller => ({
-        id: seller._id,
+        _id: seller._id,
         firstName: seller.firstName,
         lastName: seller.lastName,
         fullName: `${seller.firstName} ${seller.lastName}`,
