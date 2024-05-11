@@ -114,9 +114,15 @@ class SellerService {
   }
 
   /**
-   * Authenticate seller
-   * @param {Object} credentials - Email and password
-   * @returns {Object} Seller data and token
+   * Authenticate seller and update login timestamp
+   * 
+   * @async
+   * @method signIn
+   * @param {Object} credentials - Login credentials
+   * @param {string} credentials.email - Seller's email address
+   * @param {string} credentials.password - Plain text password
+   * @returns {Promise<Object>} Authentication result with tokens and seller info
+   * @throws {Error} Invalid credentials, account locked, or account inactive error
    */
   async signIn(credentials) {
     try {
@@ -545,9 +551,14 @@ class SellerService {
   }
 
   /**
-   * Get multiple sellers by IDs (for inter-service communication)
-   * @param {Array<string>} sellerIds - Array of seller IDs
-   * @returns {Promise<Array>} Seller data
+   * Get multiple sellers by IDs for inter-service communication
+   * 
+   * @async
+   * @method getSellersByIds
+   * @param {Array<string>} sellerIds - Array of seller MongoDB ObjectIds
+   * @returns {Promise<Array<Object>>} Array of seller objects with basic info
+   * @description Returns only active sellers with essential fields for display
+   * @throws {Error} Database operation error
    */
   async getSellersByIds(sellerIds) {
     try {
@@ -577,9 +588,14 @@ class SellerService {
   }
 
   /**
-   * Verify if seller exists and is active
-   * @param {string} sellerId - Seller ID
-   * @returns {Promise<boolean>} Verification result
+   * Verify if seller exists and is active (for inter-service validation)
+   * 
+   * @async
+   * @method verifySeller
+   * @param {string} sellerId - Seller MongoDB ObjectId
+   * @returns {Promise<boolean>} True if seller exists and is active, false otherwise
+   * @description Used by other services to validate seller references
+   * @throws {Error} Database operation error (returns false on error)
    */
   async verifySeller(sellerId) {
     try {

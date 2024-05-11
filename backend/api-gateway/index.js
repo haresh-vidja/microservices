@@ -1,6 +1,10 @@
 /**
  * API Gateway - Single Entry Point for All Microservices
  * Routes requests to appropriate microservices using proxy middleware
+ * 
+ * @fileoverview Central routing service that acts as a single entry point
+ * for all client requests. Implements request proxying, rate limiting,
+ * security headers, and centralized logging for microservices architecture.
  */
 
 const express = require('express');
@@ -15,7 +19,10 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 8000;
 
-// Security and performance middleware
+/**
+ * Security and performance middleware configuration
+ * @description Applies security headers, CORS policy, compression, and request parsing
+ */
 app.use(helmet());
 app.use(cors({ 
   origin: process.env.CORS_ORIGIN || '*',
@@ -32,7 +39,11 @@ app.use((req, res, next) => {
   express.json({ limit: '10mb' })(req, res, next);
 });
 
-// Rate limiting
+/**
+ * Rate limiting configuration to prevent abuse
+ * @constant {Object} limiter - Express rate limiter middleware
+ * @description Limits requests per IP to prevent DDoS and abuse
+ */
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: process.env.RATE_LIMIT_MAX || 1000, // limit each IP to 1000 requests per windowMs
@@ -45,7 +56,11 @@ const limiter = rateLimit({
 });
 app.use(limiter);
 
-// Service configuration
+/**
+ * Service configuration mapping
+ * @constant {Object} services - Maps service names to their configurations
+ * @description Each service has target URL and path rewrite rules for proxying
+ */
 const services = {
   customer: {
     target: process.env.CUSTOMER_SERVICE_URL || 'http://localhost:3001',
@@ -77,7 +92,13 @@ const services = {
   }
 };
 
-// Health check for API Gateway
+/**
+ * Health check endpoint for API Gateway monitoring
+ * 
+ * @route GET /health
+ * @returns {Object} Gateway status and service information
+ * @description Provides health status for monitoring and load balancer checks
+ */
 app.get('/health', (req, res) => {
   res.json({
     success: true,
@@ -90,7 +111,14 @@ app.get('/health', (req, res) => {
   });
 });
 
-// Secure media access routes
+/**
+ * Secure media access endpoint
+ * 
+ * @route GET /media/:media_id
+ * @param {string} media_id - Media file identifier
+ * @returns {Stream} Media file stream or error response
+ * @description Securely serves media files through the gateway with proper headers
+ */
 app.get('/media/:media_id', async (req, res) => {
   const { media_id } = req.params;
   
@@ -207,7 +235,11 @@ app.get('/api/status', async (req, res) => {
   });
 });
 
-// Create proxy middleware for each service
+/**
+ * Create and configure proxy middleware for each service
+ * @description Dynamically creates proxy routes for all registered services
+ * with error handling, request/response logging, and proper header management
+ */
 Object.entries(services).forEach(([serviceName, config]) => {
   const proxyOptions = {
     target: config.target,

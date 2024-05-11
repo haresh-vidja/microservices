@@ -1,6 +1,10 @@
 /**
  * Order Service Layer
  * Contains business logic for order operations
+ * 
+ * @class OrderService
+ * @description Handles all business logic for order and cart management including
+ * cart operations, order processing, payment handling, and inter-service communication
  */
 
 const Order = require('../models/Order');
@@ -11,7 +15,16 @@ const logger = require('../utils/logger');
 
 class OrderService {
   /**
-   * Add item to cart
+   * Add item to customer's cart
+   * 
+   * @async
+   * @method addToCart
+   * @param {string} customerId - Customer's MongoDB ObjectId
+   * @param {string} productId - Product's MongoDB ObjectId
+   * @param {number} quantity - Quantity to add to cart
+   * @returns {Promise<Object>} Updated cart with added item
+   * @throws {Error} Product not found, insufficient stock, or validation error
+   * @description Validates product availability and updates cart, creates new cart if needed
    */
   async addToCart(customerId, productId, quantity) {
     try {

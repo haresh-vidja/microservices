@@ -1,6 +1,10 @@
 /**
  * Customer Service Layer
  * Contains business logic for customer operations
+ * 
+ * @class CustomerService
+ * @description Handles all business logic for customer management including
+ * authentication, profile management, and account operations
  */
 
 const Customer = require('../models/Customer');
@@ -10,9 +14,18 @@ const logger = require('../utils/logger');
 
 class CustomerService {
   /**
-   * Register a new customer
+   * Register a new customer account
+   * 
+   * @async
+   * @method signUp
    * @param {Object} userData - Customer registration data
-   * @returns {Object} Created customer and token
+   * @param {string} userData.firstName - Customer's first name
+   * @param {string} userData.lastName - Customer's last name
+   * @param {string} userData.email - Customer's email address
+   * @param {string} userData.password - Plain text password
+   * @param {string} userData.phone - Phone number
+   * @returns {Promise<Object>} Created customer and authentication token
+   * @throws {Error} Validation error or duplicate email error
    */
   async signUp(userData) {
     try {

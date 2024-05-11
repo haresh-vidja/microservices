@@ -2,6 +2,11 @@
 /**
  * EmailSender Utility Class
  * Handles email sending with templates and SMTP configuration
+ * 
+ * @package NotificationService
+ * @class EmailSender
+ * @description Manages email composition, template processing, SMTP configuration,
+ * and delivery tracking with comprehensive error handling and logging
  */
 
 require_once '../models/NotificationTemplate.php';
@@ -9,11 +14,23 @@ require_once '../models/SmtpConfig.php';
 require_once '../models/EmailHistory.php';
 
 class EmailSender {
+    /** @var PDO $db Database connection */
     private $db;
+    
+    /** @var NotificationTemplate $template_model Template management model */
     private $template_model;
+    
+    /** @var SmtpConfig $smtp_model SMTP configuration model */
     private $smtp_model;
+    
+    /** @var EmailHistory $history_model Email history tracking model */
     private $history_model;
 
+    /**
+     * Initialize EmailSender with database connection
+     * 
+     * @param PDO $db Database connection
+     */
     public function __construct($db) {
         $this->db = $db;
         $this->template_model = new NotificationTemplate($db);
@@ -22,7 +39,15 @@ class EmailSender {
     }
 
     /**
-     * Send email using template
+     * Send email using template with variable substitution
+     * 
+     * @method sendTemplateEmail
+     * @param string $template_name Template identifier
+     * @param string $recipient_email Recipient email address
+     * @param array $variables Template variables for substitution
+     * @param string $recipient_name Optional recipient name
+     * @return array Result array with success status and message
+     * @throws Exception SMTP configuration or sending errors
      */
     public function sendEmail($templateCode, $recipientEmail, $recipientName = '', $data = []) {
         try {

@@ -1,6 +1,10 @@
 /**
  * Admin Service Entry Point
  * Provides admin panel APIs and statistics
+ * 
+ * @fileoverview Admin service handles authentication, user management,
+ * and proxying requests to other microservices for admin panel operations.
+ * Includes JWT-based authentication and service-to-service communication.
  */
 
 const express = require('express');
@@ -15,7 +19,10 @@ const jwt = require('jsonwebtoken');
 const app = express();
 const PORT = process.env.PORT || 3006;
 
-// MongoDB connection
+/**
+ * MongoDB connection configuration for admin database
+ * @constant {string} MONGODB_URI - Database connection string
+ */
 const MONGODB_URI = process.env.ADMIN_MONGODB_URI || 'mongodb://localhost:27017/admin_db';
 mongoose.connect(MONGODB_URI, {
   useNewUrlParser: true,
@@ -55,10 +62,22 @@ const adminSchema = new mongoose.Schema({
 
 const Admin = mongoose.model('Admin', adminSchema);
 
-// JWT Secret
+/**
+ * JWT secret key for admin authentication
+ * @constant {string} JWT_SECRET - Secret key for signing and verifying tokens
+ */
 const JWT_SECRET = process.env.JWT_SECRET || 'admin-secret-key';
 
-// Admin authentication middleware
+/**
+ * Admin authentication middleware
+ * 
+ * @function verifyAdminToken
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object  
+ * @param {Function} next - Express next function
+ * @description Validates JWT tokens for admin authentication
+ * @throws {Error} 401 - Invalid, expired, or missing token
+ */
 const verifyAdminToken = (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
@@ -108,7 +127,10 @@ app.use(cors({ origin: '*', credentials: true }));
 app.use(compression());
 app.use(express.json());
 
-// Service endpoints
+/**
+ * Service endpoints configuration for inter-service communication
+ * @constant {Object} services - Map of service names to their URLs
+ */
 const services = {
   customer: 'http://localhost:3001',
   sellers: 'http://localhost:3002',

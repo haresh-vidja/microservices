@@ -2,6 +2,11 @@
 /**
  * Media Controller
  * Handles API requests for media operations
+ * 
+ * @package MediaService
+ * @class MediaController
+ * @description Manages file uploads, downloads, validation, and cleanup operations.
+ * Handles image processing, thumbnail generation, and media metadata management.
  */
 
 require_once __DIR__ . '/../models/MediaFile.php';
@@ -25,7 +30,13 @@ class MediaController {
     }
 
     /**
-     * Handle file upload
+     * Handle file upload with validation and processing
+     * 
+     * @method uploadFile
+     * @return void Outputs JSON response
+     * @throws Exception File upload errors, validation failures
+     * @description Processes multipart file uploads, validates file types,
+     * generates thumbnails for images, and stores metadata in database
      */
     public function uploadFile() {
         try {

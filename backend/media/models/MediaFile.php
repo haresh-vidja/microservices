@@ -2,25 +2,56 @@
 /**
  * MediaFile Model
  * Handles database operations for media files
+ * 
+ * @package MediaService
+ * @class MediaFile
+ * @description Database model for managing media file metadata, tracking usage,
+ * and providing CRUD operations for media files in the system
  */
 
 require_once __DIR__ . '/../config/database.php';
 
 class MediaFile {
+    /** @var PDO $conn Database connection */
     private $conn;
+    
+    /** @var string $table_name Database table name */
     private $table_name = "media_files";
     
+    /** @var string $id Media file UUID */
     public $id;
+    
+    /** @var string $original_filename Original uploaded filename */
     public $original_filename;
+    
+    /** @var string $stored_filename Generated filename for storage */
     public $stored_filename;
+    
+    /** @var int $file_size File size in bytes */
     public $file_size;
+    
+    /** @var string $file_extension File extension (jpg, png, etc.) */
     public $file_extension;
+    
+    /** @var string $content_type MIME type of the file */
     public $content_type;
+    
+    /** @var string $upload_type Upload context (profile, product, etc.) */
     public $upload_type;
+    
+    /** @var string $access_url Public URL for accessing the file */
     public $access_url;
+    
+    /** @var string $thumbnail_url URL for thumbnail version */
     public $thumbnail_url;
+    
+    /** @var bool $is_used Whether file is actively used */
     public $is_used;
+    
+    /** @var string $uploaded_at Upload timestamp */
     public $uploaded_at;
+    
+    /** @var string $updated_at Last update timestamp */
     public $updated_at;
 
     public function __construct($db) {

@@ -1,6 +1,10 @@
 /**
  * Product Service
  * Business logic for product operations
+ * 
+ * @class ProductService
+ * @description Handles all business logic for product management including
+ * CRUD operations, inventory management, media validation, and analytics
  */
 
 const Product = require('../models/Product');
@@ -10,6 +14,21 @@ const mediaClient = require('../utils/mediaClient');
 class ProductService {
   /**
    * Get products with filters and pagination
+   * 
+   * @async
+   * @method getProducts
+   * @param {Object} [filters={}] - Filter criteria
+   * @param {string} [filters.category] - Category filter
+   * @param {string} [filters.sellerId] - Seller ID filter
+   * @param {string} [filters.search] - Search term
+   * @param {string} [filters.status='active'] - Product status
+   * @param {string} [filters.sortBy='createdAt'] - Sort field
+   * @param {string} [filters.sortOrder='desc'] - Sort order
+   * @param {Object} [pagination={}] - Pagination parameters
+   * @param {number} [pagination.page=1] - Page number
+   * @param {number} [pagination.limit=10] - Items per page
+   * @returns {Promise<Object>} Object containing products array and pagination info
+   * @throws {Error} Database operation error
    */
   async getProducts(filters = {}, pagination = {}) {
     const { 
@@ -65,6 +84,13 @@ class ProductService {
 
   /**
    * Get single product by ID
+   * 
+   * @async
+   * @method getProductById
+   * @param {string} id - Product ID (MongoDB ObjectId)
+   * @returns {Promise<Object>} Product document
+   * @throws {Error} 'Product not found' - When product doesn't exist
+   * @throws {Error} Database operation error
    */
   async getProductById(id) {
     const product = await Product.findById(id);
@@ -75,7 +101,20 @@ class ProductService {
   }
 
   /**
-   * Create new product
+   * Create new product with media validation
+   * 
+   * @async
+   * @method createProduct
+   * @param {Object} productData - Product data object
+   * @param {string} productData.name - Product name
+   * @param {string} productData.description - Product description
+   * @param {number} productData.price - Product price
+   * @param {string} productData.sellerId - Seller ID
+   * @param {Array} [productData.images] - Array of image objects with media_id
+   * @param {Object} [productData.specifications] - Product specifications
+   * @returns {Promise<Object>} Created product document
+   * @throws {Error} Media validation error
+   * @throws {Error} Database operation error
    */
   async createProduct(productData) {
     // Validate media files if provided (only validate media_id based images)
@@ -111,7 +150,16 @@ class ProductService {
   }
 
   /**
-   * Update product
+   * Update existing product with history tracking
+   * 
+   * @async
+   * @method updateProduct
+   * @param {string} id - Product ID
+   * @param {Object} updateData - Data to update
+   * @returns {Promise<Object>} Updated product document
+   * @throws {Error} 'Product not found' - When product doesn't exist
+   * @throws {Error} Media validation error
+   * @throws {Error} Database operation error
    */
   async updateProduct(id, updateData) {
     const product = await Product.findById(id);
@@ -432,7 +480,20 @@ class ProductService {
   }
 
   /**
-   * Get all products for admin (with search and filtering)
+   * Get all products for admin panel with comprehensive filtering
+   * 
+   * @async
+   * @method getAllProducts
+   * @param {Object} [query={}] - Query parameters
+   * @param {number} [query.page=1] - Page number
+   * @param {number} [query.limit=10] - Items per page
+   * @param {string} [query.sort='-createdAt'] - Sort criteria
+   * @param {string} [query.search] - Search term for name/description/category/tags
+   * @param {string} [query.status] - Status filter (active/inactive)
+   * @param {string} [query.category] - Category filter
+   * @param {string} [query.sellerId] - Seller filter
+   * @returns {Promise<Object>} Object with products array and pagination info
+   * @throws {Error} Database operation error
    */
   async getAllProducts(query = {}) {
     try {
@@ -508,7 +569,15 @@ class ProductService {
   }
 
   /**
-   * Update product status (admin only)
+   * Update product status with history tracking (admin only)
+   * 
+   * @async
+   * @method updateProductStatus
+   * @param {string} productId - Product ID
+   * @param {string} status - New status (active/inactive/draft)
+   * @returns {Promise<Object>} Updated product document
+   * @throws {Error} 'Product not found' - When product doesn't exist
+   * @throws {Error} Database operation error
    */
   async updateProductStatus(productId, status) {
     try {
