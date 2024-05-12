@@ -9,6 +9,7 @@ import OrdersList from './OrdersList';
 import SellerProfile from './Profile';
 import Login from './Login';
 import Register from './Register';
+import ForgotPassword from './ForgotPassword';
 
 const SellerApp = () => {
   const isAuthenticated = () => {
@@ -47,6 +48,7 @@ const SellerApp = () => {
     <Switch>
       <PublicRoute exact path="/seller/login" component={Login} />
       <PublicRoute exact path="/seller/register" component={Register} />
+      <PublicRoute exact path="/seller/forgot-password" component={ForgotPassword} />
       
       <PrivateRoute exact path="/seller" component={SellerDashboard} />
       <PrivateRoute exact path="/seller/dashboard" component={SellerDashboard} />

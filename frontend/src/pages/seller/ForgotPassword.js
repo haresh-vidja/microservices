@@ -4,13 +4,13 @@ import { Link, useHistory } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 
-const SellerLogin = () => {
+const SellerForgotPassword = () => {
   const [formData, setFormData] = useState({
-    email: '',
-    password: ''
+    email: ''
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const history = useHistory();
 
   const handleChange = (e) => {
@@ -19,28 +19,27 @@ const SellerLogin = () => {
       [e.target.name]: e.target.value
     });
     if (error) setError('');
+    if (success) setSuccess('');
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
+    setSuccess('');
 
     try {
-      const response = await axios.post('http://localhost:3002/api/v1/sellers/signin', formData);
+      const response = await axios.post('http://localhost:3002/api/v1/sellers/forgot-password', formData);
       
       if (response.data.success) {
-        localStorage.setItem('sellerToken', response.data.data.accessToken);
-        localStorage.setItem('sellerData', JSON.stringify(response.data.data.seller));
-        
-        toast.success('Login successful!');
-        console.log('Redirecting to /seller/dashboard');
+        setSuccess('Password reset instructions have been sent to your email address.');
+        toast.success('Password reset email sent successfully!');
         setTimeout(() => {
-          history.push('/seller/dashboard');
-        }, 1000);
+          history.push('/seller/login');
+        }, 3000);
       }
     } catch (error) {
-      const errorMessage = error.response?.data?.message || 'Login failed. Please try again.';
+      const errorMessage = error.response?.data?.message || 'Failed to send reset email. Please try again.';
       setError(errorMessage);
       toast.error(errorMessage);
     } finally {
@@ -57,13 +56,14 @@ const SellerLogin = () => {
               <div className="text-center mb-4">
                 <div className="d-inline-flex align-items-center justify-content-center bg-success text-white rounded-circle mb-3" 
                      style={{ width: '64px', height: '64px' }}>
-                  <i className="fas fa-store fa-2x"></i>
+                  <i className="fas fa-key fa-2x"></i>
                 </div>
-                <h3 className="mb-1">Seller Portal</h3>
-                <p className="text-muted">Sign in to manage your store</p>
+                <h3 className="mb-1">Reset Password</h3>
+                <p className="text-muted">Enter your email to reset your password</p>
               </div>
 
                 {error && <Alert color="danger">{error}</Alert>}
+                {success && <Alert color="success">{success}</Alert>}
 
                 <Form onSubmit={handleSubmit}>
                   <FormGroup>
@@ -76,21 +76,7 @@ const SellerLogin = () => {
                       value={formData.email}
                       onChange={handleChange}
                       required
-                      disabled={loading}
-                    />
-                  </FormGroup>
-
-                  <FormGroup>
-                    <Label for="password">Password</Label>
-                    <Input
-                      type="password"
-                      name="password"
-                      id="password"
-                      placeholder="Enter your password"
-                      value={formData.password}
-                      onChange={handleChange}
-                      required
-                      disabled={loading}
+                      disabled={loading || success}
                     />
                   </FormGroup>
 
@@ -98,25 +84,30 @@ const SellerLogin = () => {
                     type="submit"
                     color="success"
                     block
-                    disabled={loading}
+                    disabled={loading || success}
                   >
                     {loading ? (
                       <>
                         <i className="fas fa-spinner fa-spin mr-2"></i>
-                        Signing In...
+                        Sending Reset Email...
+                      </>
+                    ) : success ? (
+                      <>
+                        <i className="fas fa-check mr-2"></i>
+                        Email Sent
                       </>
                     ) : (
                       <>
-                        <i className="fas fa-sign-in-alt mr-2"></i>
-                        Sign In
+                        <i className="fas fa-paper-plane mr-2"></i>
+                        Send Reset Email
                       </>
                     )}
                   </Button>
                 </Form>
 
                 <div className="text-center mt-3">
-                  <Link to="/seller/forgot-password">
-                    Forgot Password?
+                  <Link to="/seller/login">
+                    Back to Login
                   </Link>
                 </div>
 
@@ -136,4 +127,4 @@ const SellerLogin = () => {
   );
 };
 
-export default SellerLogin;
+export default SellerForgotPassword;

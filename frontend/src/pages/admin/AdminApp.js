@@ -3,6 +3,7 @@ import { Switch, Route, Redirect, useHistory } from 'react-router-dom';
 
 // Admin Pages
 import AdminLogin from './Login';
+import AdminForgotPassword from './ForgotPassword';
 import AdminDashboard from './Dashboard';
 import AdminCustomers from './Customers';
 import AdminSellers from './Sellers';
@@ -24,6 +25,7 @@ const AdminApp = () => {
   return (
     <Switch>
       <Route exact path="/admin/login" component={AdminLogin} />
+      <Route exact path="/admin/forgot-password" component={AdminForgotPassword} />
       
       {/* Protected Admin Routes */}
       <Route exact path="/admin" render={() => <Redirect to="/admin/dashboard" />} />

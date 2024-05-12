@@ -5,26 +5,24 @@ import {
   Col, 
   Card, 
   CardBody, 
-  CardTitle, 
   Form, 
   FormGroup, 
   Label, 
   Input, 
   Button, 
-  Alert,
-  Spinner
+  Alert 
 } from 'reactstrap';
-import { useHistory, Link } from 'react-router-dom';
+import { Link, useHistory } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 
-const AdminLogin = () => {
+const AdminForgotPassword = () => {
   const [formData, setFormData] = useState({
-    email: '',
-    password: ''
+    email: ''
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const history = useHistory();
 
   const handleChange = (e) => {
@@ -33,30 +31,29 @@ const AdminLogin = () => {
       [e.target.name]: e.target.value
     });
     if (error) setError('');
+    if (success) setSuccess('');
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
+    setSuccess('');
 
     try {
-      const response = await axios.post('/api/admin/login', {
-        email: formData.email,
-        password: formData.password
+      const response = await axios.post('/api/admin/forgot-password', {
+        email: formData.email
       });
 
       if (response.data.success) {
-        const { token, admin } = response.data.data;
-        
-        localStorage.setItem('adminToken', token);
-        localStorage.setItem('adminInfo', JSON.stringify(admin));
-        
-        toast.success('Login successful!');
-        history.push('/admin/dashboard');
+        setSuccess('Password reset instructions have been sent to your email address.');
+        toast.success('Password reset email sent successfully!');
+        setTimeout(() => {
+          history.push('/admin/login');
+        }, 3000);
       }
     } catch (error) {
-      const errorMessage = error.response?.data?.message || 'Login failed. Please try again.';
+      const errorMessage = error.response?.data?.message || 'Failed to send reset email. Please try again.';
       setError(errorMessage);
       toast.error(errorMessage);
     } finally {
@@ -73,13 +70,14 @@ const AdminLogin = () => {
               <div className="text-center mb-4">
                 <div className="d-inline-flex align-items-center justify-content-center bg-dark text-white rounded-circle mb-3" 
                      style={{ width: '64px', height: '64px' }}>
-                  <i className="fas fa-shield-alt fa-2x"></i>
+                  <i className="fas fa-key fa-2x"></i>
                 </div>
-                <h3 className="mb-1">Admin Portal</h3>
-                <p className="text-muted">Sign in to manage your platform</p>
+                <h3 className="mb-1">Reset Password</h3>
+                <p className="text-muted">Enter your admin email to reset password</p>
               </div>
 
                 {error && <Alert color="danger">{error}</Alert>}
+                {success && <Alert color="success">{success}</Alert>}
 
                 <Form onSubmit={handleSubmit}>
                   <FormGroup>
@@ -92,21 +90,7 @@ const AdminLogin = () => {
                       value={formData.email}
                       onChange={handleChange}
                       required
-                      disabled={loading}
-                    />
-                  </FormGroup>
-
-                  <FormGroup>
-                    <Label for="password">Password</Label>
-                    <Input
-                      type="password"
-                      name="password"
-                      id="password"
-                      placeholder="Enter your password"
-                      value={formData.password}
-                      onChange={handleChange}
-                      required
-                      disabled={loading}
+                      disabled={loading || success}
                     />
                   </FormGroup>
 
@@ -114,47 +98,36 @@ const AdminLogin = () => {
                     type="submit"
                     color="dark"
                     block
-                    disabled={loading}
+                    disabled={loading || success}
                   >
                     {loading ? (
                       <>
-                        <Spinner size="sm" className="mr-2" />
-                        Signing In...
+                        <i className="fas fa-spinner fa-spin mr-2"></i>
+                        Sending Reset Email...
+                      </>
+                    ) : success ? (
+                      <>
+                        <i className="fas fa-check mr-2"></i>
+                        Email Sent
                       </>
                     ) : (
                       <>
-                        <i className="fas fa-sign-in-alt mr-2"></i>
-                        Sign In
+                        <i className="fas fa-paper-plane mr-2"></i>
+                        Send Reset Email
                       </>
                     )}
                   </Button>
                 </Form>
 
                 <div className="text-center mt-3">
-                  <Link to="/admin/forgot-password">
-                    Forgot Password?
+                  <Link to="/admin/login">
+                    Back to Login
                   </Link>
                 </div>
 
                 <div className="text-center mt-3">
                   <small className="text-muted">
-                    Authorized personnel only
-                  </small>
-                </div>
-
-                {/* Demo Credentials */}
-                <div className="mt-3 p-3 bg-light rounded">
-                  <small className="text-muted d-block mb-2">
-                    <strong>Demo Credentials:</strong>
-                  </small>
-                  <small className="d-block">
-                    <strong>Super Admin:</strong> admin@example.com / admin123
-                  </small>
-                  <small className="d-block">
-                    <strong>Manager:</strong> manager@example.com / manager123
-                  </small>
-                  <small className="d-block">
-                    <strong>Moderator:</strong> moderator@example.com / moderator123
+                    Contact system administrator if you need assistance
                   </small>
                 </div>
               </CardBody>
@@ -165,4 +138,4 @@ const AdminLogin = () => {
   );
 };
 
-export default AdminLogin;
+export default AdminForgotPassword;

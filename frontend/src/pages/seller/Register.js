@@ -13,18 +13,39 @@ const SellerRegister = () => {
     confirmPassword: '',
     phone: '',
     businessName: '',
-    businessAddress: '',
-    businessType: 'individual'
+    businessType: 'individual',
+    address: {
+      street: '',
+      city: '',
+      state: '',
+      country: '',
+      postalCode: ''
+    }
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const history = useHistory();
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
+    const { name, value } = e.target;
+    
+    // Handle nested address fields
+    if (name.startsWith('address.')) {
+      const addressField = name.split('.')[1];
+      setFormData({
+        ...formData,
+        address: {
+          ...formData.address,
+          [addressField]: value
+        }
+      });
+    } else {
+      setFormData({
+        ...formData,
+        [name]: value
+      });
+    }
+    
     if (error) setError('');
   };
 
@@ -40,8 +61,8 @@ const SellerRegister = () => {
     }
 
     try {
-      const { confirmPassword, ...submitData } = formData;
-      const response = await axios.post('http://localhost:3002/api/v1/sellers/signup', submitData);
+      // Include confirmPassword as required by API
+      const response = await axios.post('http://localhost:3002/api/v1/sellers/signup', formData);
       
       if (response.data.success) {
         toast.success('Registration successful! Please login.');
@@ -168,17 +189,79 @@ const SellerRegister = () => {
                 </FormGroup>
                 
                 <FormGroup>
-                  <Label for="businessAddress">Business Address</Label>
+                  <Label for="address.street">Street Address</Label>
                   <Input
-                    type="textarea"
-                    name="businessAddress"
-                    id="businessAddress"
-                    placeholder="Enter your business address"
-                    value={formData.businessAddress}
+                    type="text"
+                    name="address.street"
+                    id="address.street"
+                    placeholder="Enter your street address"
+                    value={formData.address.street}
                     onChange={handleChange}
                     required
                   />
                 </FormGroup>
+
+                <Row>
+                  <Col md="6">
+                    <FormGroup>
+                      <Label for="address.city">City</Label>
+                      <Input
+                        type="text"
+                        name="address.city"
+                        id="address.city"
+                        placeholder="Enter your city"
+                        value={formData.address.city}
+                        onChange={handleChange}
+                        required
+                      />
+                    </FormGroup>
+                  </Col>
+                  <Col md="6">
+                    <FormGroup>
+                      <Label for="address.state">State/Province</Label>
+                      <Input
+                        type="text"
+                        name="address.state"
+                        id="address.state"
+                        placeholder="Enter your state or province"
+                        value={formData.address.state}
+                        onChange={handleChange}
+                        required
+                      />
+                    </FormGroup>
+                  </Col>
+                </Row>
+
+                <Row>
+                  <Col md="6">
+                    <FormGroup>
+                      <Label for="address.country">Country</Label>
+                      <Input
+                        type="text"
+                        name="address.country"
+                        id="address.country"
+                        placeholder="Enter your country"
+                        value={formData.address.country}
+                        onChange={handleChange}
+                        required
+                      />
+                    </FormGroup>
+                  </Col>
+                  <Col md="6">
+                    <FormGroup>
+                      <Label for="address.postalCode">Postal/ZIP Code</Label>
+                      <Input
+                        type="text"
+                        name="address.postalCode"
+                        id="address.postalCode"
+                        placeholder="Enter your postal code"
+                        value={formData.address.postalCode}
+                        onChange={handleChange}
+                        required
+                      />
+                    </FormGroup>
+                  </Col>
+                </Row>
                 
                 <FormGroup>
                   <Label for="businessType">Business Type</Label>
