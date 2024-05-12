@@ -39,8 +39,8 @@ const CustomerRegister = () => {
     }
 
     try {
-      const { confirmPassword, ...submitData } = formData;
-      const response = await axios.post('/api/customer/customers/signup', submitData);
+      // Include confirmPassword as required by API
+      const response = await axios.post('/api/customer/customers/signup', formData);
       
       if (response.data.success) {
         toast.success('Registration successful! Please login.');
