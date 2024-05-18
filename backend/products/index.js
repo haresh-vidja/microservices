@@ -1,6 +1,14 @@
 /**
  * Products Service Entry Point
- * Modular products catalog and inventory management service
+ * 
+ * @fileoverview Modular products catalog and inventory management service
+ * @description This service handles product catalog management, inventory tracking,
+ * and provides RESTful APIs for product operations. It includes scheduled tasks
+ * for inventory management and integrates with other microservices.
+ * 
+ * @author Haresh Vidja
+ * @version 1.0.0
+ * @since 2023-11-01
  */
 
 const express = require('express');
@@ -16,24 +24,43 @@ const routes = require('./routes');
 const { notFound, errorHandler } = require('./middleware/errorHandler');
 const scheduler = require('./utils/scheduler');
 
+/**
+ * Express application instance
+ * @type {express.Application}
+ */
 const app = express();
+
+/**
+ * Server port configuration
+ * @type {number}
+ */
 const PORT = config.server.port;
 
-// Middleware
-app.use(helmet());
-app.use(cors({ origin: '*', credentials: true }));
-app.use(compression());
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true }));
+/**
+ * Security and performance middleware configuration
+ * @description Applies security headers, CORS policy, compression, and request parsing
+ */
+app.use(helmet()); // Security headers
+app.use(cors({ origin: '*', credentials: true })); // CORS configuration
+app.use(compression()); // Response compression
+app.use(express.json({ limit: '10mb' })); // JSON body parser with size limit
+app.use(express.urlencoded({ extended: true })); // URL-encoded body parser
 
-// Swagger configuration
+/**
+ * Swagger API documentation configuration
+ * @description Generates interactive API documentation using OpenAPI 3.0 specification
+ */
 const swaggerOptions = {
   definition: {
     openapi: '3.0.0',
     info: {
       title: 'Products Service API',
       version: '1.0.0',
-      description: 'Product catalog and inventory management API'
+      description: 'Product catalog and inventory management API',
+      contact: {
+        name: 'Haresh Vidja',
+        email: 'hareshvidja@gmail.com'
+      }
     },
     servers: [
       {
@@ -52,32 +79,52 @@ const swaggerOptions = {
       }
     }
   },
-  apis: ['./routes/*.js', './controllers/*.js']
+  apis: ['./routes/*.js', './controllers/*.js'] // API documentation sources
 };
 
+/**
+ * Swagger specification instance
+ * @type {Object}
+ */
 const specs = swaggerJsdoc(swaggerOptions);
+
+// Serve Swagger UI for interactive API documentation
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
+
+// Provide Swagger specification as JSON
 app.get('/api-docs.json', (req, res) => {
   res.setHeader('Content-Type', 'application/json');
   res.send(specs);
 });
 
-// API Routes
+/**
+ * API Routes Configuration
+ * @description Mounts all product-related API endpoints
+ */
 app.use('/api', routes);
 
-// Error handlers
-app.use(notFound);
-app.use(errorHandler);
+/**
+ * Global Error Handling Middleware
+ * @description Catches and processes all unhandled errors
+ */
+app.use(notFound); // 404 handler
+app.use(errorHandler); // Global error handler
 
-// Graceful shutdown handler
+/**
+ * Graceful shutdown handler
+ * @description Ensures clean shutdown of the service and all resources
+ * @param {string} signal - The shutdown signal received
+ * @returns {Promise<void>}
+ */
 const gracefulShutdown = async (signal) => {
   console.log(`\n🛑 ${signal} received. Starting graceful shutdown...`);
   
   try {
-    // Stop scheduler
+    // Stop scheduled tasks and background jobs
     scheduler.shutdown();
+    console.log('✅ Scheduler stopped');
     
-    // Close database connection
+    // Close database connection gracefully
     const mongoose = require('mongoose');
     await mongoose.connection.close();
     console.log('✅ Database connection closed');
@@ -90,11 +137,17 @@ const gracefulShutdown = async (signal) => {
   }
 };
 
-// Handle shutdown signals
-process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
-process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+/**
+ * Process Signal Handlers
+ * @description Handles various shutdown signals for graceful termination
+ */
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM')); // Docker/Kubernetes shutdown
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));   // Ctrl+C termination
 
-// Handle uncaught exceptions
+/**
+ * Global Error Handlers
+ * @description Catches unhandled errors and promise rejections
+ */
 process.on('uncaughtException', (error) => {
   console.error('🔥 Uncaught Exception:', error);
   process.exit(1);
@@ -105,14 +158,20 @@ process.on('unhandledRejection', (reason, promise) => {
   process.exit(1);
 });
 
-// Start server
+/**
+ * Server startup function
+ * @description Initializes the service, connects to database, and starts HTTP server
+ * @returns {Promise<void>}
+ */
 const startServer = async () => {
   try {
-    // Connect to database
+    // Establish database connection
     await connectDB();
+    console.log('✅ Database connected successfully');
     
-    // Initialize scheduler
+    // Initialize background task scheduler
     scheduler.init();
+    console.log('✅ Task scheduler initialized');
     
     // Start HTTP server
     const server = app.listen(PORT, () => {
@@ -124,12 +183,16 @@ const startServer = async () => {
       console.log('✅ Service ready to handle requests\n');
     });
 
-    // Handle server errors
+    /**
+     * Server error handler
+     * @description Handles server-specific errors like port conflicts
+     */
     server.on('error', (error) => {
       if (error.syscall !== 'listen') {
         throw error;
       }
 
+      // Handle specific server startup errors
       switch (error.code) {
         case 'EACCES':
           console.error(`❌ Port ${PORT} requires elevated privileges`);
