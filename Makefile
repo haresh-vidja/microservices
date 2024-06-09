@@ -223,6 +223,20 @@ test-integration: ## Run integration tests
 	@echo "${YELLOW}Integration tests not yet implemented${NC}"
 
 # ============================================
+# Installation
+# ============================================
+.PHONY: install
+install: ## Install dependencies for all services
+	@echo "${GREEN}Installing dependencies...${NC}"
+	@cd backend/customer && npm install
+	@cd backend/seller && npm install
+	@cd backend/products && npm install
+	@cd backend/orders && npm install
+	@cd backend/admin && npm install
+	@cd backend/api-gateway && npm install
+	@cd frontend && npm install
+
+# ============================================
 # Quick Start
 # ============================================
 .PHONY: quickstart
