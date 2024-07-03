@@ -8,8 +8,8 @@
 - [Data Architecture](#data-architecture)
 - [Communication Patterns](#communication-patterns)
 - [Security Architecture](#security-architecture)
-- [Scalability & Performance](#scalability--performance)
-- [Monitoring & Observability](#monitoring--observability)
+- [Scalability & Performance](#scalability-performance)
+- [Monitoring & Observability](#monitoring-observability)
 - [Deployment Architecture](#deployment-architecture)
 - [Technology Decisions](#technology-decisions)
 
@@ -241,7 +241,7 @@ Service A → Client (response)
 - **Audit Logging**: Complete audit trail for all operations
 - **Data Retention**: Configurable data retention policies
 
-## Scalability & Performance
+## Scalability and Performance
 
 ### Horizontal Scaling
 
@@ -267,7 +267,7 @@ Service A → Client (response)
 - **Event Processing**: Parallel event processing for improved throughput
 - **Connection Pooling**: Efficient database connection management
 
-## Monitoring & Observability
+## Monitoring and Observability
 
 ### Monitoring Stack
 

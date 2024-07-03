@@ -1,8 +1,8 @@
-# 🚀 Microservices E-commerce Platform
+# Microservices E-commerce Platform
 
 A comprehensive, distributed microservices architecture built with Node.js, PHP, and React, designed for scalability, maintainability, and high performance.
 
-## 📋 Table of Contents
+## Table of Contents
 
 - [Overview](#overview)
 - [Features](#features)
@@ -16,39 +16,39 @@ A comprehensive, distributed microservices architecture built with Node.js, PHP,
 - [Contributing](#contributing)
 - [License](#license)
 
-## 🌟 Overview
+## Overview
 
 This project implements a modern e-commerce platform using microservices architecture, featuring separate services for customers, sellers, products, orders, media management, and notifications. The system is designed to handle high traffic loads while maintaining code quality and developer experience.
 
-## ✨ Features
+## Features
 
-### 🛍️ E-commerce Features
+### E-commerce Features
 - **Product Management**: Full CRUD operations for products with inventory tracking
 - **Customer Management**: User registration, authentication, and profile management
 - **Seller Management**: Multi-seller support with business profiles and role management
 - **Order Processing**: Complete order lifecycle with cart management
 - **Media Management**: File uploads, image processing, and storage optimization
 
-### 🔐 Security & Authentication
+### Security and Authentication
 - JWT-based authentication across all services
 - Role-based access control (RBAC)
 - Secure password handling and validation
 - API Gateway with request validation and rate limiting
 
-### 📱 User Experience
+### User Experience
 - Responsive React frontend with modern UI/UX
 - Real-time notifications and updates
 - Mobile-first design approach
 - Progressive Web App (PWA) capabilities
 
-### 🏗️ Architecture Features
+### Architecture Features
 - **Service Discovery**: Automatic service registration and health monitoring
 - **Load Balancing**: Distributed request handling across service instances
 - **Event-Driven Communication**: Kafka-based messaging for asynchronous operations
 - **Database Per Service**: Isolated data storage for better scalability
 - **API Gateway**: Single entry point with unified authentication and routing
 
-## 🏛️ Architecture
+## Architecture
 
 The system follows a **microservices architecture pattern** with the following key components:
 
@@ -73,7 +73,7 @@ The system follows a **microservices architecture pattern** with the following k
         └──────────────┘ └──────────────┘ └───────────┘
 ```
 
-## 🔧 Services
+## Services
 
 ### Core Services
 
@@ -96,7 +96,7 @@ The system follows a **microservices architecture pattern** with the following k
 | **Seller Dashboard** | React | Seller management interface | 3009 |
 | **Admin Panel** | React | System administration | 3010 |
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 ### Backend Technologies
 - **Node.js** - Runtime environment for JavaScript services
@@ -119,7 +119,7 @@ The system follows a **microservices architecture pattern** with the following k
 - **Nginx** - Web server and reverse proxy
 - **Git** - Version control system
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 - Node.js 16+ and npm
@@ -176,7 +176,7 @@ The system follows a **microservices architecture pattern** with the following k
    - Admin Panel: http://localhost:3010
    - API Gateway: http://localhost:3000
 
-## 📚 API Documentation
+## API Documentation
 
 Each service provides comprehensive API documentation:
 
@@ -188,7 +188,7 @@ Each service provides comprehensive API documentation:
 - **Notification Service**: [API Documentation](backend/notifications/API.md)
 - **Admin Service**: [API Documentation](backend/admin/API.md)
 
-## 🧪 Development
+## Development
 
 ### Development Workflow
 1. Create feature branch from `main`
@@ -214,7 +214,7 @@ cd backend/customer && npm test
 cd backend/seller && npm test
 ```
 
-## 🚀 Deployment
+## Deployment
 
 ### Production Deployment
 ```bash
@@ -233,7 +233,7 @@ docker-compose -f docker-compose.prod.yml up -d
 - **Staging**: `.env.staging`
 - **Production**: `.env.production`
 
-## 🤝 Contributing
+## Contributing
 
 We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.md) for details.
 
@@ -244,17 +244,17 @@ We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.
 4. Add tests if applicable
 5. Submit a pull request
 
-## 📄 License
+## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 📞 Support
+## Support
 
 - **Issues**: [GitHub Issues](https://github.com/haresh-vidja/microswervices/issues)
 - **Discussions**: [GitHub Discussions](https://github.com/haresh-vidja/microswervices/discussions)
 - **Email**: hareshvidja@gmail.com
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 - Built with modern web technologies and best practices
 - Inspired by microservices architecture patterns
@@ -262,6 +262,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-**Made with ❤️ by Haresh Vidja**
+**Made with love by Haresh Vidja**
 
 *Last updated: December 2024* 

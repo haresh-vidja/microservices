@@ -2,7 +2,7 @@
 
 A comprehensive microservices architecture for an e-commerce platform, featuring customer management, seller operations, product catalog, order processing, media handling, notifications, and administrative functions.
 
-## 🏗️ Architecture Overview
+## Architecture Overview
 
 This backend consists of 8 microservices that work together to provide a complete e-commerce solution:
 
@@ -30,7 +30,7 @@ This backend consists of 8 microservices that work together to provide a complet
             └──────────────┘
 ```
 
-## 🚀 Services Overview
+## Services Overview
 
 | Service | Port | Technology | Database | Purpose |
 |---------|------|------------|----------|---------|
@@ -43,7 +43,7 @@ This backend consists of 8 microservices that work together to provide a complet
 | **Admin Service** | 3006 | Node.js/Express | MongoDB | Admin panel, statistics, service management |
 | **Notifications Service** | 3007 | PHP | SQLite | Email templates, SMTP, notification history |
 
-## 📚 API Documentation
+## API Documentation
 
 Each service has comprehensive API documentation:
 
@@ -56,7 +56,7 @@ Each service has comprehensive API documentation:
 - [**Media Service API**](./media/API.md) - File upload and media handling
 - [**Notifications Service API**](./notifications/API.md) - Email templates and sending
 
-## 🛠️ Prerequisites
+## Prerequisites
 
 - **Node.js** (v18+)
 - **PHP** (v8.0+)
@@ -64,7 +64,7 @@ Each service has comprehensive API documentation:
 - **PM2** (for process management)
 - **Composer** (for PHP dependencies)
 
-## 🏃‍♂️ Quick Start
+## Quick Start
 
 ### 1. Clone and Setup
 ```bash
@@ -142,7 +142,7 @@ curl http://localhost:3006/health  # Admin
 curl http://localhost:3007/health  # Notifications
 ```
 
-## 🔧 Development
+## Development
 
 ### Running Individual Services
 ```bash
@@ -197,7 +197,7 @@ NOTIFICATIONS_SERVICE_URL=http://localhost:3007
 - **Media Service**: `media/database/media.db`
 - **Notifications Service**: `notifications/database/notifications.db`
 
-## 🔐 Authentication & Security
+## Authentication and Security
 
 ### JWT Authentication
 - **Customer Authentication**: Customer Service issues JWT tokens
@@ -214,7 +214,7 @@ NOTIFICATIONS_SERVICE_URL=http://localhost:3007
 - **Helmet**: Security headers for all Node.js services
 - **Content Security**: File upload validation and security
 
-## 📊 Monitoring & Health
+## Monitoring and Health
 
 ### Health Checks
 Each service provides a health check endpoint:
@@ -243,7 +243,7 @@ GET http://localhost:8000/api/status
 - **Production**: File-based logging (configure log paths)
 - **Error Tracking**: Comprehensive error logging across all services
 
-## 🎯 Key Features
+## Key Features
 
 ### Customer Management
 - User registration and authentication
@@ -287,7 +287,7 @@ GET http://localhost:8000/api/status
 - Order oversight
 - System statistics
 
-## 🔄 Inter-Service Communication
+## Inter-Service Communication
 
 ### Service Dependencies
 ```
@@ -310,7 +310,7 @@ API Gateway
 - **Validation**: Cross-service data validation and verification
 - **Error Handling**: Graceful degradation when services are unavailable
 
-## 🧪 Testing
+## Testing
 
 ### API Testing
 ```bash
@@ -337,7 +337,7 @@ curl -X POST http://localhost:8000/api/media/media/upload \
 curl http://localhost:8000/api/status
 ```
 
-## 📦 PM2 Management
+## PM2 Management
 
 ```bash
 # Start all services
@@ -359,7 +359,7 @@ pm2 stop all
 pm2 monit
 ```
 
-## 🛡️ Security Considerations
+## Security Considerations
 
 ### Production Security Checklist
 - [ ] Change all default JWT secrets
@@ -373,7 +373,7 @@ pm2 monit
 - [ ] Set up monitoring and alerting
 - [ ] Implement backup strategies
 
-## 🤝 Contributing
+## Contributing
 
 1. Fork the repository
 2. Create feature branch (`git checkout -b feature/amazing-feature`)
@@ -388,7 +388,7 @@ pm2 monit
 - Write meaningful commit messages
 - Test your changes thoroughly
 
-## 🏷️ Service Endpoints Summary
+## Service Endpoints Summary
 
 ### API Gateway (8000)
 - `GET /health` - Gateway health check
@@ -439,15 +439,15 @@ pm2 monit
 - `POST /api/v1/templates` - Create template
 - `GET /api/v1/history` - Email history
 
-## 📝 Author
+## Author
 
 Haresh Vidja  
 Email: hareshvidja@gmail.com
 
-## 📄 License
+## License
 
 ISC
 
 ---
 
-**Built with ❤️ for modern e-commerce solutions**
+**Built with love for modern e-commerce solutions**
